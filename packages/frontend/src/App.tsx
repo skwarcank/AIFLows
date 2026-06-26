@@ -8,6 +8,18 @@ import TraceSidebar from "./components/TraceSidebar";
 import MainContent from "./components/MainContent";
 
 function App() {
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("aiflows-theme");
+    return saved === "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = darkMode ? "dark" : "light";
+    localStorage.setItem("aiflows-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
+
+  const toggleTheme = () => setDarkMode((prev) => !prev);
+
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [profilesLoading, setProfilesLoading] = useState(true);
   const [profilesError, setProfilesError] = useState<string | null>(null);
@@ -150,6 +162,9 @@ function App() {
           selectedProfileId={selectedProfileId}
           backendOnline={backendOnline}
         />
+        <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
+          {darkMode ? "\u2600" : "\uD83C\uDF19"}
+        </button>
       </header>
 
       <div className="app-body">

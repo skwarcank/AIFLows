@@ -29,11 +29,11 @@ const NODE_COLORS: Record<string, string> = {
 };
 
 const NODE_BG_COLORS: Record<string, string> = {
-  user_prompt: "#eff6ff",
-  tool_call: "#fffbeb",
-  tool_result: "#f0fdf4",
-  assistant_response: "#faf5ff",
-  error: "#fef2f2",
+  user_prompt: "var(--node-bg-user-prompt)",
+  tool_call: "var(--node-bg-tool-call)",
+  tool_result: "var(--node-bg-tool-result)",
+  assistant_response: "var(--node-bg-assistant-response)",
+  error: "var(--node-bg-error)",
 };
 
 function eventToNode(event: TraceEvent, index: number): Node {
@@ -67,14 +67,14 @@ function truncate(text: string, max = 100): string {
 
 function TraceNode({ data, selected }: NodeProps) {
   const event = data.event as TraceEvent;
-  const borderColor = NODE_COLORS[event.type] || "#6b7280";
-  const bgColor = NODE_BG_COLORS[event.type] || "#f9fafb";
+  const borderColor = NODE_COLORS[event.type] || "var(--text-secondary)";
+  const bgColor = NODE_BG_COLORS[event.type] || "var(--surface)";
 
   return (
     <div
       className="trace-node"
       style={{
-        borderColor: selected ? borderColor : "#e5e7eb",
+        borderColor: selected ? borderColor : "var(--border)",
         borderWidth: selected ? 2 : 1,
         backgroundColor: bgColor,
         borderLeft: `4px solid ${borderColor}`,

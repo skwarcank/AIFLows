@@ -13,11 +13,44 @@
   --text: #111827;
   --text-secondary: #6b7280;
   --accent: #3b82f6;
+  --accent-bg: rgba(59, 130, 246, 0.2);
   --error: #ef4444;
   --success: #22c55e;
   --sidebar-width: 340px;
   --header-height: 56px;
   --radius: 8px;
+  --skeleton-from: #f0f0f0;
+  --skeleton-to: #e0e0e0;
+  --hover-bg: #f3f4f6;
+
+  --node-bg-user-prompt: #eff6ff;
+  --node-bg-tool-call: #fffbeb;
+  --node-bg-tool-result: #f0fdf4;
+  --node-bg-assistant-response: #faf5ff;
+  --node-bg-error: #fef2f2;
+  --node-shadow: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent: #60a5fa;
+  --accent-bg: rgba(96, 165, 250, 0.2);
+  --error: #f87171;
+  --success: #4ade80;
+  --skeleton-from: #334155;
+  --skeleton-to: #475569;
+  --hover-bg: #334155;
+
+  --node-bg-user-prompt: #1e3a5f;
+  --node-bg-tool-call: #5c4a1e;
+  --node-bg-tool-result: #1a4a2e;
+  --node-bg-assistant-response: #3b1f5e;
+  --node-bg-error: #5c1a1a;
+  --node-shadow: rgba(0, 0, 0, 0.3);
 }
 
 body {
@@ -103,7 +136,7 @@ body {
 .profile-selector select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 2px var(--accent-bg);
 }
 
 .profile-selector-error {
@@ -135,13 +168,23 @@ body {
 }
 
 .status-idle {
-  background: #f3f4f6;
+  background: var(--hover-bg);
   color: var(--text-secondary);
 }
 
 .status-error {
   background: #fef2f2;
   color: #991b1b;
+}
+
+[data-theme="dark"] .status-watching {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
+[data-theme="dark"] .status-error {
+  background: #450a0a;
+  color: #fca5a5;
 }
 
 /* Trace sidebar */
@@ -176,12 +219,12 @@ body {
 
 .trace-card:hover {
   border-color: var(--accent);
-  background: #f0f7ff;
+  background: var(--accent-bg);
 }
 
 .trace-card-selected {
   border-color: var(--accent);
-  background: #eff6ff;
+  background: var(--accent-bg);
   box-shadow: 0 0 0 1px var(--accent);
 }
 
@@ -207,13 +250,23 @@ body {
 }
 
 .badge-cli {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--hover-bg);
+  color: var(--text);
 }
 
 .badge-unknown {
   background: #fef9c3;
   color: #854d0e;
+}
+
+[data-theme="dark"] .badge-telegram {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .badge-unknown {
+  background: #5c4a1e;
+  color: #fde68a;
 }
 
 .trace-time {
@@ -296,7 +349,7 @@ body {
 }
 
 .trace-node:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--node-shadow);
 }
 
 .trace-node-header {
@@ -361,7 +414,7 @@ body {
 }
 
 .close-btn:hover {
-  background: #f3f4f6;
+  background: var(--hover-bg);
   color: var(--text);
 }
 
@@ -374,7 +427,7 @@ body {
 }
 
 .detail-type {
-  background: #f3f4f6;
+  background: var(--hover-bg);
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: 500;
@@ -388,6 +441,11 @@ body {
   color: #92400e;
 }
 
+[data-theme="dark"] .detail-tool {
+  background: #5c4a1e;
+  color: #fde68a;
+}
+
 .detail-time {
   color: var(--text-secondary);
   display: flex;
@@ -395,7 +453,7 @@ body {
 }
 
 .detail-panel-content {
-  background: #f9fafb;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 12px;
@@ -444,14 +502,14 @@ body {
 }
 
 .retry-btn:hover {
-  background: #f3f4f6;
+  background: var(--hover-bg);
   border-color: var(--accent);
   color: var(--accent);
 }
 
 /* Skeleton loading */
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--skeleton-from) 25%, var(--skeleton-to) 50%, var(--skeleton-from) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 6px;
@@ -480,4 +538,22 @@ body {
   height: 100%;
   width: 100%;
   min-height: 400px;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--accent);
 }
