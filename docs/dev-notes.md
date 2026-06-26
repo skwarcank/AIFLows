@@ -1,6 +1,6 @@
 # AIFlows
 
-AIFlows is a local Hermes trace visualizer project. The current implementation is only a storage/API tracer bullet.
+AIFlows is a local Hermes trace visualizer project. The current implementation is a storage/API/static-UI tracer bullet.
 
 ## Phase 1: read the latest Hermes trace
 
