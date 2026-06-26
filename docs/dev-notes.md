@@ -46,6 +46,7 @@ Check it from another shell:
 curl http://127.0.0.1:3417/
 curl http://127.0.0.1:3417/health
 curl http://127.0.0.1:3417/api/latest-trace
+curl http://127.0.0.1:3417/api/latest-trace/graph
 ```
 
 Endpoints:
@@ -53,16 +54,18 @@ Endpoints:
 - `GET /` returns a static HTML tracer-bullet UI. Open `http://127.0.0.1:3417/` in a browser on the machine running Hermes, or forward the port over SSH and open the forwarded localhost URL.
 - `GET /health` returns `{ "ok": true }`.
 - `GET /api/latest-trace` reads `/root/.hermes/state.db` read-only and returns the latest normalized `RunTrace` JSON.
+- `GET /api/latest-trace/graph` reads the latest real trace and returns simple graph JSON: `{ "nodes": [{ "id", "label", "type", "order" }], "edges": [{ "id", "source", "target" }] }`. The current graph is a chronological linear flow: each event points to the next event.
 
 ## Phase 3 tracer bullet: static browser UI
 
-The static UI served at `/` proves `browser -> localhost API -> real Hermes trace visible` without React, Vite, React Flow, polling, or external dependencies. Browser JavaScript fetches `/health` and `/api/latest-trace`, then renders:
+The static UI served at `/` proves `browser -> localhost API -> real Hermes trace visible` without React, Vite, React Flow, polling, or external dependencies. Browser JavaScript fetches `/health`, `/api/latest-trace`, and `/api/latest-trace/graph`, then renders:
 
 - health OK/error
 - trace source
 - prompt preview
 - final answer preview
 - event count
+- a simple vertical graph flow from graph nodes
 - a simple list of event types and titles
 
 If a fetch fails, the page renders a readable error in the affected section.

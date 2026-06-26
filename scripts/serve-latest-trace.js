@@ -7,7 +7,7 @@
 //   node --experimental-sqlite --no-warnings scripts/serve-latest-trace.js
 
 const http = require('node:http');
-const { readLatestTrace } = require('./trace-reader');
+const { readLatestTrace, traceToGraphData } = require('./trace-reader');
 
 const HOST = '127.0.0.1';
 const DEFAULT_PORT = 3417;
@@ -25,6 +25,11 @@ const INDEX_HTML = `<!doctype html>
     .error { color: #9b1c1c; }
     .ok { color: #176b2c; }
     li { margin: 0.35rem 0; }
+    .flow { list-style: none; padding: 0; }
+    .flow li { border: 1px solid #ddd; border-radius: 8px; margin: 0 0 0.75rem 0; padding: 0.75rem; }
+    .flow li::after { content: '↓'; display: block; color: #777; margin: 0.75rem 0 -1.2rem 1rem; }
+    .flow li:last-child::after { content: ''; }
+    .type { color: #555; font-size: 0.9rem; }
   </style>
 </head>
 <body>
@@ -44,6 +49,12 @@ const INDEX_HTML = `<!doctype html>
       <dt>Final answer preview</dt><dd id="finalAnswerPreview">Loading…</dd>
       <dt>Event count</dt><dd id="eventCount">Loading…</dd>
     </dl>
+  </section>
+
+  <section>
+    <h2>Graph flow</h2>
+    <p>Rendered from <code>/api/latest-trace/graph</code>.</p>
+    <ol id="graph" class="flow"><li>Loading…</li></ol>
   </section>
 
   <section>
@@ -113,8 +124,41 @@ const INDEX_HTML = `<!doctype html>
       }
     }
 
+    async function loadGraph() {
+      const list = document.getElementById('graph');
+      try {
+        const graph = await fetchJson('/api/latest-trace/graph');
+        list.replaceChildren();
+        for (const node of graph.nodes || []) {
+          const item = document.createElement('li');
+          const label = document.createElement('strong');
+          const type = document.createElement('div');
+
+          label.textContent = node.order + '. ' + node.label;
+          type.className = 'type';
+          type.textContent = node.type + ' · node ' + node.id;
+
+          item.appendChild(label);
+          item.appendChild(type);
+          list.appendChild(item);
+        }
+        if (!list.children.length) {
+          const item = document.createElement('li');
+          item.textContent = 'No graph nodes returned.';
+          list.appendChild(item);
+        }
+      } catch (error) {
+        list.replaceChildren();
+        const item = document.createElement('li');
+        item.className = 'error';
+        item.textContent = 'Error loading /api/latest-trace/graph: ' + error.message;
+        list.appendChild(item);
+      }
+    }
+
     loadHealth();
     loadTrace();
+    loadGraph();
   </script>
 </body>
 </html>`;
@@ -136,7 +180,7 @@ function sendJson(response, statusCode, body) {
 function notFound(response) {
   sendJson(response, 404, {
     error: 'Not found',
-    endpoints: ['/', '/health', '/api/latest-trace'],
+    endpoints: ['/', '/health', '/api/latest-trace', '/api/latest-trace/graph'],
   });
 }
 
@@ -164,6 +208,19 @@ function handleRequest(request, response) {
     } catch (error) {
       sendJson(response, 500, {
         error: 'Failed to read latest Hermes trace.',
+        message: error.message,
+      });
+    }
+    return;
+  }
+
+  if (url.pathname === '/api/latest-trace/graph') {
+    try {
+      const trace = readLatestTrace();
+      sendJson(response, 200, traceToGraphData(trace));
+    } catch (error) {
+      sendJson(response, 500, {
+        error: 'Failed to build latest Hermes trace graph.',
         message: error.message,
       });
     }

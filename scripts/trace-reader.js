@@ -108,6 +108,43 @@ function buildEvents(messages) {
   return events;
 }
 
+function uniqueNodeId(baseId, usedIds) {
+  const safeBaseId = String(baseId || 'event');
+  let candidate = safeBaseId;
+  let suffix = 2;
+
+  while (usedIds.has(candidate)) {
+    candidate = `${safeBaseId}-${suffix}`;
+    suffix += 1;
+  }
+
+  usedIds.add(candidate);
+  return candidate;
+}
+
+function traceToGraphData(trace) {
+  const usedIds = new Set();
+  const nodes = (trace.events || []).map((event, index) => ({
+    id: uniqueNodeId(event.id || `event-${index + 1}`, usedIds),
+    label: event.title || event.type || `Event ${index + 1}`,
+    type: event.type || 'unknown',
+    order: index + 1,
+  }));
+
+  const edges = [];
+  for (let index = 1; index < nodes.length; index += 1) {
+    const previous = nodes[index - 1];
+    const current = nodes[index];
+    edges.push({
+      id: `edge-${previous.order}-to-${current.order}`,
+      source: previous.id,
+      target: current.id,
+    });
+  }
+
+  return { nodes, edges };
+}
+
 function readLatestTrace() {
   const db = new DatabaseSync(DB_PATH, { readOnly: true });
 
@@ -179,4 +216,5 @@ module.exports = {
   DB_PATH,
   PROFILE,
   readLatestTrace,
+  traceToGraphData,
 };
