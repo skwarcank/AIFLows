@@ -1,85 +1,100 @@
-# AIFlows
+# AIFlows — Development Notes
 
-AIFlows is a local Hermes trace visualizer project. The current implementation is a storage/API/static-UI tracer bullet.
+## Project structure
 
-## Phase 1: read the latest Hermes trace
-
-This tracer bullet reads the known local Hermes database at `/root/.hermes/state.db` in read-only mode and prints one normalized `RunTrace` JSON object.
-
-Requirements:
-
-- Node.js 22+ with the experimental built-in SQLite module.
-- A readable Hermes SQLite database at `/root/.hermes/state.db`.
-
-Run the CLI:
-
-```bash
-node --experimental-sqlite --no-warnings scripts/read-latest-trace.js
+```
+├── packages/
+│   ├── backend/      TypeScript + Express API server
+│   └── frontend/     Vite + React + React Flow dashboard
+├── scripts/          Original JavaScript tracer bullets (legacy)
+│   ├── trace-reader.js        Ported to packages/backend/src/trace-reader.ts
+│   ├── serve-latest-trace.js  Replaced by packages/backend/src/index.ts
+│   └── read-latest-trace.js   CLI utility (kept for reference)
+└── docs/
+    ├── PRD.md        Product requirements
+    ├── issues/       Implementation slices
+    └── dev-notes.md  This file
 ```
 
-The output includes at least:
+## Backend
 
-- one `user_prompt` event
-- one `assistant_response` event
+The TypeScript + Express backend at `packages/backend/` replaces the original
+raw-Node.js `serve-latest-trace.js`. Key differences:
 
-If Hermes stored tool calls/results between the prompt and final assistant response, the script also includes `tool_call` and `tool_result` events. Malformed tool-call JSON is reported as an `error` event instead of crashing the trace.
+- TypeScript with `tsx` dev runner (no build step during development)
+- Profile discovery — scans `~/.hermes/profiles/` for subdirectories with `state.db`
+- Multi-trace support — returns all completed traces, not just the latest
+- Three endpoints: profiles list, traces list per profile, single trace detail
+- Configurable Hermes profiles directory via `HERMES_PROFILES_DIR` env var
+- Uses `better-sqlite3` for SQLite (synchronous reads)
 
-## Phase 2 tracer bullet: localhost HTTP API
-
-This tracer bullet exposes the same normalized `RunTrace` JSON through a tiny dependency-free HTTP server. It binds to `127.0.0.1` only.
-
-Run the server:
-
-```bash
-node --experimental-sqlite --no-warnings scripts/serve-latest-trace.js
-```
-
-Optional port override:
+### Commands
 
 ```bash
-PORT=3420 node --experimental-sqlite --no-warnings scripts/serve-latest-trace.js
+npm run dev -w packages/backend    # Dev with hot reload
+npm run build -w packages/backend  # TypeScript build
+npm run test -w packages/backend   # Run tests
 ```
 
-Check it from another shell:
+## Frontend
+
+The Vite + React + TypeScript dashboard at `packages/frontend/` is the new UI
+that replaces the old static HTML tracer bullet.
+
+### Key components
+
+- **ProfileSelector** — dropdown populated from `GET /api/profiles`
+- **StatusIndicator** — shows watching/offline/idle state
+- **TraceSidebar** — scrollable list of trace cards with polling
+- **TraceCard** — source badge, prompt preview, relative timestamp
+- **MainContent** — routing between placeholder/graph/error views
+- **GraphView** — React Flow canvas rendering trace events as nodes/edges
+- **DetailPanel** — full event content viewer with monospace formatting
+
+### Commands
 
 ```bash
-curl http://127.0.0.1:3417/
-curl http://127.0.0.1:3417/health
-curl http://127.0.0.1:3417/api/latest-trace
-curl http://127.0.0.1:3417/api/latest-trace/graph
+npm run dev -w packages/frontend    # Vite HMR dev server
+npm run build -w packages/frontend  # Production build
 ```
 
-Endpoints:
+## Running everything
 
-- `GET /` returns a static HTML tracer-bullet UI. Open `http://127.0.0.1:3417/` in a browser on the machine running Hermes, or forward the port over SSH and open the forwarded localhost URL.
-- `GET /health` returns `{ "ok": true }`.
-- `GET /api/latest-trace` reads `/root/.hermes/state.db` read-only and returns the latest normalized `RunTrace` JSON.
-- `GET /api/latest-trace/graph` reads the latest real trace and returns simple graph JSON: `{ "nodes": [{ "id", "label", "type", "order" }], "edges": [{ "id", "source", "target" }] }`. The current graph is a chronological linear flow: each event points to the next event.
+### Production mode (single command)
 
-## Phase 3 tracer bullet: static browser UI
+```bash
+npm run build -w packages/frontend
+HERMES_PROFILES_DIR=~/.hermes/profiles npm start
+# Open http://127.0.0.1:3417
+```
 
-The static UI served at `/` proves `browser -> localhost API -> real Hermes trace visible` without React, Vite, React Flow, polling, or external dependencies. Browser JavaScript fetches `/health`, `/api/latest-trace`, and `/api/latest-trace/graph`, then renders:
+### Development mode (two terminals)
 
-- health OK/error
-- trace source
-- prompt preview
-- final answer preview
-- event count
-- a simple vertical graph flow from graph nodes and graph edges
-- a simple list of event types and titles
+```bash
+# Terminal 1
+npm run dev:backend
 
-If a fetch fails, the page renders a readable error in the affected section.
+# Terminal 2
+npm run dev:frontend
+# Open http://127.0.0.1:5173
+```
 
-## Phase 4 tracer bullet: edge-aware static rendering
+## Testing
 
-The static UI now consumes both `graph.nodes` and `graph.edges` from `/api/latest-trace/graph`. Each node card shows outgoing edge IDs plus the real `source -> target` values from the API, including the target node label/order when the target exists. Missing edge sources or targets render as readable red warnings instead of crashing the page.
+The most important seam is the Hermes storage parser / trace normalizer:
 
-Intentional tracer-bullet limits:
+```
+Hermes SQLite rows → normalized RunTrace
+```
 
-- no React/Vite UI framework
-- no React Flow
-- no polling
-- no profile selector
-- no arbitrary filesystem paths
-- no writes to Hermes `state.db`
-- no network binding beyond `127.0.0.1`
+Tests live in `packages/backend/__tests__/`.
+
+```bash
+npm test
+```
+
+## Legacy tracer bullets
+
+The original JavaScript files in `scripts/` are kept for reference but are no
+longer the primary way to run the app. They use Node.js's experimental built-in
+SQLite module (`--experimental-sqlite` flag) and the built-in `http` module.
