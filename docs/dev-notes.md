@@ -65,10 +65,14 @@ The static UI served at `/` proves `browser -> localhost API -> real Hermes trac
 - prompt preview
 - final answer preview
 - event count
-- a simple vertical graph flow from graph nodes
+- a simple vertical graph flow from graph nodes and graph edges
 - a simple list of event types and titles
 
 If a fetch fails, the page renders a readable error in the affected section.
+
+## Phase 4 tracer bullet: edge-aware static rendering
+
+The static UI now consumes both `graph.nodes` and `graph.edges` from `/api/latest-trace/graph`. Each node card shows outgoing edge IDs plus the real `source -> target` values from the API, including the target node label/order when the target exists. Missing edge sources or targets render as readable red warnings instead of crashing the page.
 
 Intentional tracer-bullet limits:
 

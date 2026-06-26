@@ -27,9 +27,10 @@ const INDEX_HTML = `<!doctype html>
     li { margin: 0.35rem 0; }
     .flow { list-style: none; padding: 0; }
     .flow li { border: 1px solid #ddd; border-radius: 8px; margin: 0 0 0.75rem 0; padding: 0.75rem; }
-    .flow li::after { content: '↓'; display: block; color: #777; margin: 0.75rem 0 -1.2rem 1rem; }
-    .flow li:last-child::after { content: ''; }
     .type { color: #555; font-size: 0.9rem; }
+    .edges { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed #ddd; }
+    .edge { color: #333; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9rem; margin: 0.2rem 0; }
+    .edge-missing { color: #9b1c1c; }
   </style>
 </head>
 <body>
@@ -129,22 +130,61 @@ const INDEX_HTML = `<!doctype html>
       try {
         const graph = await fetchJson('/api/latest-trace/graph');
         list.replaceChildren();
-        for (const node of graph.nodes || []) {
+        const nodes = graph.nodes || [];
+        const edges = graph.edges || [];
+        const nodeById = new Map(nodes.map((node) => [node.id, node]));
+        const outgoingEdges = new Map();
+
+        for (const edge of edges) {
+          const edgeSource = edge.source || '(missing source)';
+          if (!outgoingEdges.has(edgeSource)) outgoingEdges.set(edgeSource, []);
+          outgoingEdges.get(edgeSource).push(edge);
+        }
+
+        for (const node of nodes) {
           const item = document.createElement('li');
           const label = document.createElement('strong');
           const type = document.createElement('div');
+          const edgeBox = document.createElement('div');
 
           label.textContent = node.order + '. ' + node.label;
           type.className = 'type';
           type.textContent = node.type + ' · node ' + node.id;
+          edgeBox.className = 'edges';
 
           item.appendChild(label);
           item.appendChild(type);
+
+          const nodeOutgoingEdges = outgoingEdges.get(node.id) || [];
+          if (nodeOutgoingEdges.length) {
+            for (const edge of nodeOutgoingEdges) {
+              const edgeLine = document.createElement('div');
+              const target = nodeById.get(edge.target);
+              edgeLine.className = target ? 'edge' : 'edge edge-missing';
+              edgeLine.textContent = target
+                ? 'edge ' + edge.id + ': ' + edge.source + ' → ' + edge.target + ' (' + target.order + '. ' + target.label + ')'
+                : 'edge ' + edge.id + ': ' + edge.source + ' → missing target ' + (edge.target || '(none)');
+              edgeBox.appendChild(edgeLine);
+            }
+          } else {
+            const noEdge = document.createElement('div');
+            noEdge.className = 'edge';
+            noEdge.textContent = 'no outgoing edge';
+            edgeBox.appendChild(noEdge);
+          }
+
+          item.appendChild(edgeBox);
+          list.appendChild(item);
+        }
+        for (const edge of edges.filter((edge) => !nodeById.has(edge.source))) {
+          const item = document.createElement('li');
+          item.className = 'edge-missing';
+          item.textContent = 'Edge ' + edge.id + ' has missing source ' + (edge.source || '(none)') + ' → ' + (edge.target || '(none)');
           list.appendChild(item);
         }
         if (!list.children.length) {
           const item = document.createElement('li');
-          item.textContent = 'No graph nodes returned.';
+          item.textContent = 'No graph nodes or edges returned.';
           list.appendChild(item);
         }
       } catch (error) {
