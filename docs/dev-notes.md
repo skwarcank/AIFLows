@@ -43,18 +43,34 @@ PORT=3420 node --experimental-sqlite --no-warnings scripts/serve-latest-trace.js
 Check it from another shell:
 
 ```bash
+curl http://127.0.0.1:3417/
 curl http://127.0.0.1:3417/health
 curl http://127.0.0.1:3417/api/latest-trace
 ```
 
 Endpoints:
 
+- `GET /` returns a static HTML tracer-bullet UI. Open `http://127.0.0.1:3417/` in a browser on the machine running Hermes, or forward the port over SSH and open the forwarded localhost URL.
 - `GET /health` returns `{ "ok": true }`.
 - `GET /api/latest-trace` reads `/root/.hermes/state.db` read-only and returns the latest normalized `RunTrace` JSON.
 
+## Phase 3 tracer bullet: static browser UI
+
+The static UI served at `/` proves `browser -> localhost API -> real Hermes trace visible` without React, Vite, React Flow, polling, or external dependencies. Browser JavaScript fetches `/health` and `/api/latest-trace`, then renders:
+
+- health OK/error
+- trace source
+- prompt preview
+- final answer preview
+- event count
+- a simple list of event types and titles
+
+If a fetch fails, the page renders a readable error in the affected section.
+
 Intentional tracer-bullet limits:
 
-- no React/Vite UI
+- no React/Vite UI framework
+- no React Flow
 - no polling
 - no profile selector
 - no arbitrary filesystem paths

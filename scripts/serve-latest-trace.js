@@ -13,6 +13,119 @@ const HOST = '127.0.0.1';
 const DEFAULT_PORT = 3417;
 const PORT = Number(process.env.PORT || DEFAULT_PORT);
 
+const INDEX_HTML = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIFlows Trace</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; line-height: 1.45; }
+    code, pre { background: #f4f4f4; padding: 0.15rem 0.3rem; border-radius: 4px; }
+    .error { color: #9b1c1c; }
+    .ok { color: #176b2c; }
+    li { margin: 0.35rem 0; }
+  </style>
+</head>
+<body>
+  <h1>AIFlows latest Hermes trace</h1>
+  <p>Static tracer bullet: browser → localhost API → real Hermes trace.</p>
+
+  <section>
+    <h2>Health</h2>
+    <p id="health">Loading…</p>
+  </section>
+
+  <section>
+    <h2>Trace summary</h2>
+    <dl>
+      <dt>Source</dt><dd id="source">Loading…</dd>
+      <dt>Prompt preview</dt><dd id="promptPreview">Loading…</dd>
+      <dt>Final answer preview</dt><dd id="finalAnswerPreview">Loading…</dd>
+      <dt>Event count</dt><dd id="eventCount">Loading…</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <ul id="events"><li>Loading…</li></ul>
+  </section>
+
+  <script>
+    const text = (id, value) => {
+      document.getElementById(id).textContent = value ?? '—';
+    };
+
+    async function fetchJson(path) {
+      const response = await fetch(path);
+      if (!response.ok) {
+        throw new Error(path + ' returned HTTP ' + response.status);
+      }
+      return response.json();
+    }
+
+    async function loadHealth() {
+      try {
+        const health = await fetchJson('/health');
+        const node = document.getElementById('health');
+        node.textContent = health.ok ? 'OK' : 'Error: health response was not ok';
+        node.className = health.ok ? 'ok' : 'error';
+      } catch (error) {
+        const node = document.getElementById('health');
+        node.textContent = 'Error: ' + error.message;
+        node.className = 'error';
+      }
+    }
+
+    async function loadTrace() {
+      try {
+        const trace = await fetchJson('/api/latest-trace');
+        text('source', trace.source);
+        text('promptPreview', trace.promptPreview);
+        text('finalAnswerPreview', trace.finalAnswerPreview);
+        text('eventCount', Array.isArray(trace.events) ? String(trace.events.length) : '0');
+
+        const list = document.getElementById('events');
+        list.replaceChildren();
+        for (const event of trace.events || []) {
+          const item = document.createElement('li');
+          const type = event.type || 'unknown';
+          const title = event.title || 'Untitled event';
+          item.textContent = type + ': ' + title;
+          list.appendChild(item);
+        }
+        if (!list.children.length) {
+          const item = document.createElement('li');
+          item.textContent = 'No events returned.';
+          list.appendChild(item);
+        }
+      } catch (error) {
+        text('source', 'Error');
+        text('promptPreview', 'Error: ' + error.message);
+        text('finalAnswerPreview', '—');
+        text('eventCount', '—');
+        const list = document.getElementById('events');
+        list.replaceChildren();
+        const item = document.createElement('li');
+        item.className = 'error';
+        item.textContent = 'Error loading /api/latest-trace: ' + error.message;
+        list.appendChild(item);
+      }
+    }
+
+    loadHealth();
+    loadTrace();
+  </script>
+</body>
+</html>`;
+
+function sendHtml(response, statusCode, body) {
+  response.writeHead(statusCode, {
+    'content-type': 'text/html; charset=utf-8',
+  });
+  response.end(body);
+}
+
 function sendJson(response, statusCode, body) {
   response.writeHead(statusCode, {
     'content-type': 'application/json; charset=utf-8',
@@ -23,7 +136,7 @@ function sendJson(response, statusCode, body) {
 function notFound(response) {
   sendJson(response, 404, {
     error: 'Not found',
-    endpoints: ['/health', '/api/latest-trace'],
+    endpoints: ['/', '/health', '/api/latest-trace'],
   });
 }
 
@@ -32,6 +145,11 @@ function handleRequest(request, response) {
 
   if (request.method !== 'GET') {
     sendJson(response, 405, { error: 'Only GET is supported.' });
+    return;
+  }
+
+  if (url.pathname === '/') {
+    sendHtml(response, 200, INDEX_HTML);
     return;
   }
 
