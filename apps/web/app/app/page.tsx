@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import AppShell from '@/components/app-shell';
 import { createSupabaseWorkspaceStore, ensureAppShellState } from '@/lib/app-state';
+import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createReadOnlySupabaseServerClient } from '@/lib/supabase/server';
 
 export default async function AppPage() {
@@ -14,7 +15,8 @@ export default async function AppPage() {
     redirect('/login');
   }
 
-  const state = await ensureAppShellState(createSupabaseWorkspaceStore(supabase), {
+  const adminSupabase = createSupabaseAdminClient();
+  const state = await ensureAppShellState(createSupabaseWorkspaceStore(adminSupabase), {
     id: user.id,
     email: user.email,
   });

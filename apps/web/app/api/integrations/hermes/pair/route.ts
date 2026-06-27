@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseWorkspaceStore } from '@/lib/app-state';
 import { createSupabaseHermesPairingStore, createHermesPairingSession } from '@/lib/hermes-pairing';
 import { createRouteSupabaseClient } from '@/lib/supabase/route';
+import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -18,8 +19,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const workspaceStore = createSupabaseWorkspaceStore(supabase);
-    const pairingStore = createSupabaseHermesPairingStore(supabase, workspaceStore);
+    const adminSupabase = createSupabaseAdminClient();
+    const workspaceStore = createSupabaseWorkspaceStore(adminSupabase);
+    const pairingStore = createSupabaseHermesPairingStore(adminSupabase, workspaceStore);
     const pairing = await createHermesPairingSession(pairingStore, {
       id: user.id,
       email: user.email,
