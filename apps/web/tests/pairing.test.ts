@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { buildConnectorInstallScript } from '../lib/connector-install';
 import {
   buildConnectorCommand,
   buildConnectorInstallUrl,
@@ -40,6 +41,13 @@ describe('pairing helpers', () => {
 
   it('shell-quotes single quotes safely', () => {
     expect(shellQuote("can't")).toBe("'can'\\''t'");
+  });
+
+  it('writes a connector wrapper that preserves runtime arguments', () => {
+    const script = buildConnectorInstallScript('https://app.example.com');
+
+    expect(script).toContain("cat > \"$BIN_PATH\" <<'EOF'");
+    expect(script).toContain('exec node "$HOME/.aiflows/connector-src/packages/connector/dist/cli.js" "$@"');
   });
 
   it('keeps the token ttl pragmatic and short lived', () => {

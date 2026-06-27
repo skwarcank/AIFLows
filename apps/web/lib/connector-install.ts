@@ -59,7 +59,7 @@ export function buildConnectorInstallScript(apiBaseUrl: string): string {
     'echo "Building Connector..."',
     'npm run build -w packages/connector >/dev/null',
     '',
-    'cat > "$BIN_PATH" <<EOF',
+    "cat > \"$BIN_PATH\" <<'EOF'",
     '#!/usr/bin/env bash',
     'exec node "$HOME/.aiflows/connector-src/packages/connector/dist/cli.js" "$@"',
     'EOF',
