@@ -42,8 +42,15 @@ input {
 
 .auth-card,
 .mission-control-shell {
-  width: min(960px, 100%);
   margin: 0 auto;
+}
+
+.auth-card {
+  width: min(960px, 100%);
+}
+
+.mission-control-shell {
+  width: min(1280px, 100%);
 }
 
 .auth-card {
@@ -238,9 +245,16 @@ button:disabled {
 
 .mission-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.4fr);
+  grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.6fr);
   gap: 16px;
   margin-top: 16px;
+  min-width: 0;
+}
+
+.flow-list-card,
+.replay-card,
+.timeline-step > div {
+  min-width: 0;
 }
 
 .flow-list {
@@ -261,8 +275,21 @@ button:disabled {
 
 .flow-list-item span,
 .timeline-step p,
-.replay-section p {
+.replay-section p,
+.timeline-step strong {
   color: #b8c5df;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.timeline-step strong {
+  color: #e5eefb;
+}
+
+.flow-list-item strong,
+.flow-list-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .flow-list-item-active {
