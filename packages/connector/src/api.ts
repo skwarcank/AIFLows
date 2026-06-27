@@ -1,3 +1,5 @@
+import type { FlowIngestionRequest } from '@aiflows/flow-core';
+
 export interface PairConnectorResponse {
   connectorToken: string;
   integration: {
@@ -9,45 +11,52 @@ export interface PairConnectorResponse {
   };
 }
 
-export class ConnectorApiError extends Error {
-  statusCode: number;
-
-  constructor(message: string, statusCode = 500) {
-    super(message);
-    this.name = 'ConnectorApiError';
-    this.statusCode = statusCode;
-  }
-}
-
-export function resolveApiBaseUrl(explicit?: string): string {
-  const raw = explicit || process.env.AIFLOWS_API_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  return raw.replace(/\/$/, '');
-}
-
-export async function pairConnector(input: {
+export interface PairConnectorInput {
   token: string;
   apiBaseUrl?: string;
   connectorName?: string;
-}): Promise<{ apiBaseUrl: string; response: PairConnectorResponse }> {
-  const apiBaseUrl = resolveApiBaseUrl(input.apiBaseUrl);
-  const response = await fetch(`${apiBaseUrl}/api/connectors/pair`, {
+}
+
+export class ConnectorApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
+
+export function resolveApiBaseUrl(input?: string): string {
+  return (input || process.env.AIFLOWS_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+}
+
+async function postJson<T>(apiBaseUrl: string, path: string, body: unknown, connectorToken?: string): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
+      ...(connectorToken ? { authorization: `Bearer ${connectorToken}` } : {}),
     },
-    body: JSON.stringify({
-      token: input.token,
-      connectorName: input.connectorName ?? 'aiflows-connector',
-    }),
+    body: JSON.stringify(body),
   });
 
-  const body = (await response.json().catch(() => ({ error: 'Invalid JSON response from Hosted AIFlows.' }))) as
-    | PairConnectorResponse
-    | { error?: string };
-
+  const data = (await response.json().catch(() => ({}))) as { error?: string } & T;
   if (!response.ok) {
-    throw new ConnectorApiError((body as { error?: string }).error ?? 'Pairing failed.', response.status);
+    throw new ConnectorApiError(data.error ?? `Request failed with HTTP ${response.status}`, response.status);
   }
+  return data as T;
+}
 
-  return { apiBaseUrl, response: body as PairConnectorResponse };
+export async function pairConnector(input: PairConnectorInput): Promise<{ apiBaseUrl: string; response: PairConnectorResponse }> {
+  const apiBaseUrl = resolveApiBaseUrl(input.apiBaseUrl);
+  const response = await postJson<PairConnectorResponse>(apiBaseUrl, '/api/connectors/pair', {
+    token: input.token,
+    connectorName: input.connectorName ?? 'aiflows-connector',
+  });
+  return { apiBaseUrl, response };
+}
+
+export async function sendHeartbeat(input: { apiBaseUrl: string; connectorToken: string; status?: 'connected' | 'syncing' | 'error'; message?: string }): Promise<{ integration: { id: string; status: string } }> {
+  return postJson(input.apiBaseUrl, '/api/connectors/heartbeat', { status: input.status ?? 'connected', message: input.message }, input.connectorToken);
+}
+
+export async function uploadFlows(input: { apiBaseUrl: string; connectorToken: string; payload: FlowIngestionRequest }): Promise<{ accepted: number }> {
+  return postJson(input.apiBaseUrl, '/api/connectors/ingest', input.payload, input.connectorToken);
 }

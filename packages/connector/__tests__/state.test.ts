@@ -3,7 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { getConnectorStatePath, readConnectorState, writeConnectorState } from '../src/state';
+import { getConnectorStatePath, markFlowSynced, readConnectorState, recordFailedUpload, writeConnectorState } from '../src/state';
 
 describe('connector state', () => {
   let homeDir: string | null = null;
@@ -40,5 +40,28 @@ describe('connector state', () => {
     homeDir = await mkdtemp(join(tmpdir(), 'aiflows-connector-'));
     await rm(homeDir, { recursive: true, force: true });
     expect(await readConnectorState(homeDir)).toBeNull();
+  });
+
+  it('tracks synced and failed Flow state durably', () => {
+    const state = markFlowSynced(
+      recordFailedUpload(
+        {
+          apiBaseUrl: 'http://localhost:3000',
+          connectorToken: 'token',
+          integrationId: 'integration',
+          workspaceId: 'workspace',
+          integrationName: 'Hermes',
+          provider: 'hermes',
+          pairedAt: '2026-06-27T12:00:00.000Z',
+        },
+        'flow-1',
+        'default',
+        'network down',
+      ),
+      'flow-1',
+    );
+
+    expect(state.syncedFlowIds).toEqual(['flow-1']);
+    expect(state.failedUploads?.[0]?.lastError).toBe('network down');
   });
 });

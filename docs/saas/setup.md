@@ -8,7 +8,7 @@ Important workflow rule:
 
 ## 0. Local app to run while developing
 
-- The new SaaS web app lives at `apps/web`.
+- The SaaS web app lives at `apps/web`.
 - From the repo root, run:
 
 ```bash
@@ -16,18 +16,17 @@ npm run dev:web
 ```
 
 - The app uses Next.js on `http://localhost:3000` by default.
+- If using the Connector from another machine, set `NEXT_PUBLIC_APP_URL` to a URL reachable from that machine, not `localhost`.
 
 ## 1. Supabase project
-
-Status: to be completed by Krzysztof in browser.
 
 Steps:
 
 1. Create a Supabase project for AIFlows SaaS.
-2. Copy the project URL and anon / publishable key into `apps/web/.env.local` using `apps/web/.env.local.example` as the template.
-3. Keep the service role key private; do not paste it into browser-facing code.
-4. Apply migrations with the Supabase CLI wrapper in this repo.
-5. Confirm the database tables and RLS policies exist before trying browser sign-in.
+2. Copy the project URL and anon/publishable key into `apps/web/.env.local` using `apps/web/.env.local.example`.
+3. Copy the service role key into `SUPABASE_SERVICE_ROLE_KEY` in `apps/web/.env.local`. Keep it private; never expose it in browser code.
+4. Apply migrations with the Supabase CLI wrapper.
+5. Confirm the database tables and RLS policies exist before browser sign-in.
 
 ### Automated migration flow
 
@@ -36,22 +35,15 @@ Use the repo wrapper from the project root:
 ```bash
 cp supabase/.env.local.example supabase/.env.local
 # paste the remote Supabase database URL into SUPABASE_DB_URL
-npm run supabase:push
-```
-
-For a dry run first:
-
-```bash
 npm run supabase:push:dry-run
+npm run supabase:push
 ```
 
 ### Manual migration fallback
 
-If the CLI is unavailable, you can still apply `supabase/migrations/*.sql` by pasting them into **Supabase Dashboard → SQL Editor** in timestamp order.
+If the CLI is unavailable, apply `supabase/migrations/*.sql` in **Supabase Dashboard → SQL Editor** in timestamp order.
 
 ## 2. Supabase Auth
-
-Status: to be completed by Krzysztof in browser.
 
 Enable email/password auth first.
 
@@ -59,9 +51,9 @@ Enable email/password auth first.
 
 1. Open **Authentication → Providers → Email**.
 2. Turn on email/password sign-in.
-3. Keep email verification enabled unless you have a reason to change it.
+3. Keep email verification enabled unless you intentionally disable it for local dev.
 4. Open **Authentication → URL Configuration**.
-5. Set the **Site URL** for local dev to:
+5. Set local **Site URL** to:
 
 ```text
 http://localhost:3000
@@ -81,19 +73,15 @@ https://<your-vercel-domain>/auth/callback
 1. Open **Authentication → Providers → GitHub**.
 2. Enable the provider.
 3. Create or reuse a GitHub OAuth App if Supabase asks for a client ID/secret.
-4. Copy the **GitHub OAuth callback URL** shown in Supabase into the GitHub OAuth App settings.
+4. Copy the Supabase callback URL into the GitHub OAuth App settings.
 5. Paste the GitHub client ID and secret back into Supabase.
-6. Keep the redirect URL configured to the deployed Vercel domain once production is live.
+6. Use the deployed Vercel domain once production is live.
 
 If Supabase shows a callback like `https://<project-ref>.supabase.co/auth/v1/callback`, use that exact URL in GitHub.
 
 ## 3. Environment variables
 
-Amon should maintain `apps/web/.env.local.example` with all required variables for the web app shell.
-
-The Supabase CLI wrapper uses `supabase/.env.local.example` for remote migration settings.
-
-Required for the web app shell:
+### Web app
 
 Create the file in the Next.js app root:
 
@@ -110,25 +98,49 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY` is required only on the server side for connector pairing/token exchange. Never expose it in browser code.
+Important: `apps/web` is the Next.js project root, so this app reads env vars from `apps/web/.env.local`, not the repo root `.env`.
 
-Important: `apps/web` is the Next.js project root, so this app reads env vars from `apps/web/.env.local` (not the repo root `.env`).
+### Supabase CLI wrapper
 
-Keep this guide and `apps/web/.env.local.example` synchronized.
+```bash
+cp supabase/.env.local.example supabase/.env.local
+```
+
+Fill:
+
+```env
+SUPABASE_DB_URL=postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres
+```
+
+### Connector
+
+The curl installer passes `--api-base-url` automatically. Optional local overrides live in:
+
+```bash
+cp packages/connector/.env.example packages/connector/.env
+```
+
+Use `HERMES_HOME=/path/to/.hermes` only if Hermes is not in a normal location.
 
 ## 4. GitHub repository and Actions
 
-Status: to be completed by Krzysztof in browser when repo is ready.
+The repo includes `.github/workflows/quality-gates.yml`.
 
-Amon should provide GitHub Actions workflow files that run quality gates:
+It runs:
 
-- install dependencies;
-- typecheck;
-- tests;
-- build;
-- Supabase migration validation if practical.
+- `npm ci`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- a lightweight Supabase migration sanity check
 
-No production database migrations should be auto-applied by GitHub Actions in the first version.
+It does **not** deploy to Vercel and does **not** apply production migrations.
+
+Krzysztof steps:
+
+1. Ensure GitHub auth is configured on the machine used to push.
+2. Push `main` to GitHub.
+3. Open the GitHub Actions tab and confirm the workflow passes.
 
 ## 5. Vercel deployment
 
@@ -140,48 +152,75 @@ Krzysztof steps:
 
 1. Create/import the AIFlows GitHub repo in Vercel.
 2. Select the Next.js app root: `apps/web`.
-3. Leave the build command as the Next.js default unless Amon later changes it.
-4. Add the required environment variables in Vercel.
-5. Configure the production domain/URL.
+3. Add the required environment variables from section 3.
+4. Set `NEXT_PUBLIC_APP_URL` to the deployed Vercel URL.
+5. Configure production domain/URL if available.
 6. Update Supabase Auth redirect URLs to the deployed Vercel domain.
 7. Trigger a deployment from Git.
 
-## 6. Manual verification checklist
+## 6. Hermes pairing and Connector flow
 
-After the initial SaaS vertical slice:
-
-- [ ] Sign up with email/password.
-- [ ] Verify the email redirect opens the deployed app, not localhost.
-- [ ] Sign in with GitHub OAuth.
-- [ ] Confirm the user lands in the authenticated app shell.
-- [ ] Confirm unauthenticated users are redirected to `/login`.
-- [ ] Create a Hermes Integration from the onboarding screen.
-- [ ] Copy the `curl -fsSL <app-url>/api/connectors/install.sh | bash -s -- --token <token>` command.
-- [ ] Run that command on the same machine/VPS as Hermes.
-- [ ] Confirm the pairing screen starts polling integration status.
-
-## 7. Hermes pairing flow
-
-Status: implemented in the app; connector execution still requires Krzysztof on the Hermes machine.
-
-What the app now does:
+What the app does:
 
 1. Creates a pending Hermes Integration in Supabase.
 2. Generates a short-lived one-time pairing token.
 3. Stores only the token hash server-side.
-4. Shows the command:
+4. Shows a curl command:
 
 ```bash
 curl -fsSL <app-url>/api/connectors/install.sh | bash -s -- --token <token>
 ```
 
-The app fills in the real app URL and one-time token. This avoids npm publishing; the install script downloads the connector source from GitHub, builds it locally, then runs the connector pairing command.
+The install script downloads the connector from GitHub, builds it locally, and pairs it with Hosted AIFlows.
 
-5. Polls the integration status after the command is shown.
+After pairing, run the connector beside Hermes:
 
-Krzysztof step:
+```bash
+~/.aiflows/bin/aiflows-connector run
+```
 
-- Run the command on the same machine or VPS where Hermes is installed.
+If you added `~/.aiflows/bin` to `PATH`, this shorter form also works:
+
+```bash
+aiflows-connector run
+```
+
+Useful options:
+
+```bash
+aiflows-connector detect --hermes-home /path/to/.hermes
+aiflows-connector run --hermes-home /path/to/.hermes --once
+aiflows-connector run --yes
+```
+
+The connector:
+
+- discovers Hermes profiles read-only;
+- lets you choose profiles;
+- asks whether to sync recent history;
+- sends heartbeat status;
+- uploads shallow completed Flow payloads every 5 seconds;
+- exits clearly if the Integration is deleted or credentials are revoked.
+
+## 7. Manual verification checklist
+
+After the SaaS vertical slice:
+
+- [ ] Apply migrations.
+- [ ] Sign up with email/password.
+- [ ] Verify auth redirect opens the correct app URL.
+- [ ] Sign in with GitHub OAuth if configured.
+- [ ] Confirm authenticated users land in `/app`.
+- [ ] Confirm unauthenticated users redirect to `/login`.
+- [ ] Create a Hermes Integration from onboarding.
+- [ ] Copy the curl pairing command.
+- [ ] Run that command on the same machine/VPS as Hermes.
+- [ ] Run `aiflows-connector run`.
+- [ ] Confirm status changes from pending to connected/syncing/offline as appropriate.
+- [ ] Confirm synced Flows appear in Hosted Mission Control.
+- [ ] Open a Flow Replay and verify prompt, timeline/tool summaries, and final answer render.
+- [ ] Delete the Integration and confirm synced data disappears.
+- [ ] Confirm a running connector exits clearly on next heartbeat/ingest after deletion.
 
 ## 8. Confirmation rule
 
