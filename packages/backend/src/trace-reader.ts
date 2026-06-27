@@ -59,6 +59,7 @@ interface Message {
   tool_calls: string | null;
   tool_call_id: string | null;
   tool_name: string | null;
+  model?: string | null;
   session_id: string;
 }
 
@@ -270,6 +271,7 @@ export function readTracesForProfile(
       finishedAt: toIso(finalAssistant.timestamp) || "",
       promptPreview: preview(userPrompt.content),
       finalAnswerPreview: preview(finalAssistant.content),
+      model: finalAssistant.model || userPrompt.model || undefined,
       events,
     });
   }

@@ -1,15 +1,15 @@
-import type { TraceEvent } from "../types";
+import type { FlowStep } from "../types";
 
 interface Props {
-  event: TraceEvent | null;
+  step: FlowStep | null;
   onClose: () => void;
 }
 
-function DetailPanel({ event, onClose }: Props) {
-  if (!event) {
+function DetailPanel({ step, onClose }: Props) {
+  if (!step) {
     return (
       <div className="detail-panel detail-panel-empty">
-        <p>Click a node to see details</p>
+        <p>Click a graph node or timeline item to see details.</p>
       </div>
     );
   }
@@ -17,25 +17,37 @@ function DetailPanel({ event, onClose }: Props) {
   return (
     <div className="detail-panel">
       <div className="detail-panel-header">
-        <h3>{event.title}</h3>
-        <button className="close-btn" onClick={onClose}>
+        <div>
+          <h3>{step.title}</h3>
+          <p className="detail-panel-summary">{step.summary}</p>
+        </div>
+        <button className="close-btn" onClick={onClose} aria-label="Clear selection">
           ×
         </button>
       </div>
+
       <div className="detail-panel-meta">
-        <span className="detail-type">{event.type}</span>
-        {event.toolName && (
-          <span className="detail-tool">Tool: {event.toolName}</span>
-        )}
-        {event.timestamp && (
-          <span className="detail-time">
-            {new Date(event.timestamp).toLocaleString()}
-          </span>
+        <span className="detail-type">{step.type.replace(/_/g, " ")}</span>
+        {step.toolName && <span className="detail-tool">Tool: {step.toolName}</span>}
+        {step.timestamp && (
+          <span className="detail-time">{new Date(step.timestamp).toLocaleString()}</span>
         )}
       </div>
-      {event.content && (
+
+      {step.details && step.details.length > 0 && (
+        <dl className="detail-fields">
+          {step.details.map((item) => (
+            <div key={`${step.id}-${item.label}`} className="detail-field">
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {(step.type === "user_prompt" || step.type === "assistant_response") && step.content && (
         <div className="detail-panel-content">
-          <pre>{event.content}</pre>
+          <pre>{step.content}</pre>
         </div>
       )}
     </div>

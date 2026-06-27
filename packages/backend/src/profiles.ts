@@ -1,8 +1,8 @@
 import { readdirSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-export const DEFAULT_AGENT_ID = "adam";
-export const DEFAULT_AGENT_LABEL = "Adam";
+export const DEFAULT_AGENT_ID = "default";
+export const DEFAULT_AGENT_LABEL = "default";
 
 export interface Profile {
   id: string;

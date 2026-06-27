@@ -3,21 +3,19 @@ import {
   ReactFlow,
   Background,
   Controls,
-  type Node,
   type Edge,
+  type Node,
   type NodeProps,
   Handle,
   Position,
-  useNodesState,
-  useEdgesState,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import type { RunTrace, TraceEvent } from "../types";
+import type { FlowStep } from "../types";
 
 interface Props {
-  trace: RunTrace;
-  selectedEventId: string | null;
-  onSelectEvent: (event: TraceEvent | null) => void;
+  steps: FlowStep[];
+  selectedStepId: string | null;
+  onSelectStep: (stepId: string) => void;
 }
 
 const NODE_COLORS: Record<string, string> = {
@@ -36,22 +34,27 @@ const NODE_BG_COLORS: Record<string, string> = {
   error: "var(--node-bg-error)",
 };
 
-function eventToNode(event: TraceEvent, index: number): Node {
+function truncate(text: string, max = 80): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  return clean.length > max ? `${clean.slice(0, max - 1)}…` : clean;
+}
+
+function stepToNode(step: FlowStep, index: number): Node {
   return {
-    id: event.id,
-    type: "traceNode",
+    id: step.id,
+    type: "flowNode",
     position: { x: 0, y: index * 120 },
-    data: { event, index },
+    data: { step, index },
   };
 }
 
-function eventsToEdges(events: TraceEvent[]): Edge[] {
+function stepsToEdges(steps: FlowStep[]): Edge[] {
   const edges: Edge[] = [];
-  for (let i = 1; i < events.length; i++) {
+  for (let i = 1; i < steps.length; i += 1) {
     edges.push({
-      id: `edge-${events[i - 1].id}-${events[i].id}`,
-      source: events[i - 1].id,
-      target: events[i].id,
+      id: `edge-${steps[i - 1].id}-${steps[i].id}`,
+      source: steps[i - 1].id,
+      target: steps[i].id,
       type: "smoothstep",
       animated: false,
     });
@@ -59,20 +62,14 @@ function eventsToEdges(events: TraceEvent[]): Edge[] {
   return edges;
 }
 
-function truncate(text: string, max = 100): string {
-  if (!text) return "";
-  const clean = text.replace(/\s+/g, " ").trim();
-  return clean.length > max ? `${clean.slice(0, max)}…` : clean;
-}
-
-function TraceNode({ data, selected }: NodeProps) {
-  const event = data.event as TraceEvent;
-  const borderColor = NODE_COLORS[event.type] || "var(--text-secondary)";
-  const bgColor = NODE_BG_COLORS[event.type] || "var(--surface)";
+function FlowNode({ data, selected }: NodeProps) {
+  const step = data.step as FlowStep;
+  const borderColor = NODE_COLORS[step.type] || "var(--text-secondary)";
+  const bgColor = NODE_BG_COLORS[step.type] || "var(--surface)";
 
   return (
     <div
-      className="trace-node"
+      className="flow-node"
       style={{
         borderColor: selected ? borderColor : "var(--border)",
         borderWidth: selected ? 2 : 1,
@@ -81,47 +78,43 @@ function TraceNode({ data, selected }: NodeProps) {
       }}
     >
       <Handle type="target" position={Position.Top} />
-      <div className="trace-node-header" style={{ color: borderColor }}>
-        {event.title}
+      <div className="flow-node-header" style={{ color: borderColor }}>
+        {step.title}
       </div>
-      {event.content && (
-        <div className="trace-node-content">{truncate(event.content)}</div>
-      )}
+      <div className="flow-node-summary">{truncate(step.summary)}</div>
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
 
-const nodeTypes = { traceNode: TraceNode };
+const nodeTypes = { flowNode: FlowNode };
 
-function GraphView({ trace, selectedEventId, onSelectEvent }: Props) {
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    const nodes = trace.events.map((event, index) => eventToNode(event, index));
-    const edges = eventsToEdges(trace.events);
-    return { nodes, edges };
-  }, [trace]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+function FlowGraph({ steps, selectedStepId, onSelectStep }: Props) {
+  const nodes = useMemo(
+    () =>
+      steps.map((step, index) => ({
+        ...stepToNode(step, index),
+        selected: step.id === selectedStepId,
+      })),
+    [steps, selectedStepId]
+  );
+  const edges = useMemo(() => stepsToEdges(steps), [steps]);
 
   const onNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node) => {
-      const eventData = node.data.event as TraceEvent;
-      onSelectEvent(eventData);
+      onSelectStep(node.id);
     },
-    [onSelectEvent]
+    [onSelectStep]
   );
 
   const onPaneClick = useCallback(() => {
-    onSelectEvent(null);
-  }, [onSelectEvent]);
+    onSelectStep("");
+  }, [onSelectStep]);
 
   return (
     <ReactFlow
       nodes={nodes}
       edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
       onNodeClick={onNodeClick}
       onPaneClick={onPaneClick}
@@ -129,9 +122,13 @@ function GraphView({ trace, selectedEventId, onSelectEvent }: Props) {
       fitViewOptions={{ padding: 0.2 }}
       nodesDraggable={false}
       nodesConnectable={false}
-      elementsSelectable={true}
+      elementsSelectable
       minZoom={0.3}
       maxZoom={2}
+      nodesFocusable={false}
+      edgesFocusable={false}
+      defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+      proOptions={{ hideAttribution: true }}
     >
       <Background />
       <Controls showInteractive={false} />
@@ -139,4 +136,4 @@ function GraphView({ trace, selectedEventId, onSelectEvent }: Props) {
   );
 }
 
-export default GraphView;
+export default FlowGraph;

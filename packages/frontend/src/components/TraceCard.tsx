@@ -1,9 +1,9 @@
 import type { TraceSummary } from "../types";
 
 interface Props {
-  trace: TraceSummary;
+  flow: TraceSummary;
   isSelected: boolean;
-  onSelect: (traceId: string) => void;
+  onSelect: (flowId: string) => void;
   relativeTime: string;
 }
 
@@ -18,26 +18,26 @@ function sourceBadgeClass(source: string): string {
   }
 }
 
-function TraceCard({ trace, isSelected, onSelect, relativeTime }: Props) {
+function FlowCard({ flow, isSelected, onSelect, relativeTime }: Props) {
   return (
     <div
       className={`trace-card ${isSelected ? "trace-card-selected" : ""}`}
-      onClick={() => onSelect(trace.id)}
+      onClick={() => onSelect(flow.id)}
     >
       <div className="trace-card-header">
-        <span className={`source-badge ${sourceBadgeClass(trace.source)}`}>
-          {trace.source}
+        <span className={`source-badge ${sourceBadgeClass(flow.source)}`}>
+          {flow.source}
         </span>
         <span className="trace-time">{relativeTime}</span>
       </div>
       <div className="trace-card-body">
-        <p className="trace-prompt">{trace.promptPreview}</p>
-        {trace.finalAnswerPreview && (
-          <p className="trace-answer">{trace.finalAnswerPreview}</p>
+        <p className="trace-prompt">{flow.promptPreview}</p>
+        {flow.finalAnswerPreview && (
+          <p className="trace-answer">{flow.finalAnswerPreview}</p>
         )}
       </div>
     </div>
   );
 }
 
-export default TraceCard;
+export default FlowCard;

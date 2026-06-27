@@ -1,5 +1,5 @@
 import type { TraceSummary } from "../types";
-import TraceCard from "./TraceCard";
+import FlowCard from "./TraceCard";
 
 interface Props {
   traces: TraceSummary[];
@@ -21,7 +21,7 @@ function relativeTime(isoString: string): string {
   return `${Math.floor(diffSec / 86400)}d ago`;
 }
 
-function TraceSidebar({
+function FlowSidebar({
   traces,
   selectedTraceId,
   onSelect,
@@ -32,7 +32,7 @@ function TraceSidebar({
   if (loading && traces.length === 0) {
     return (
       <div className="trace-sidebar">
-        <h2 className="sidebar-title">Traces</h2>
+        <h2 className="sidebar-title">Flows</h2>
         <div className="skeleton skeleton-card" />
         <div className="skeleton skeleton-card" />
         <div className="skeleton skeleton-card" />
@@ -43,9 +43,9 @@ function TraceSidebar({
   if (error) {
     return (
       <div className="trace-sidebar">
-        <h2 className="sidebar-title">Traces</h2>
+        <h2 className="sidebar-title">Flows</h2>
         <div className="error-state">
-          <span className="error-text">Failed to load traces</span>
+          <span className="error-text">Failed to load Flows</span>
           <button className="retry-btn" onClick={onRetry}>
             Retry
           </button>
@@ -56,20 +56,20 @@ function TraceSidebar({
 
   return (
     <div className="trace-sidebar">
-      <h2 className="sidebar-title">Traces</h2>
+      <h2 className="sidebar-title">Flows</h2>
       {traces.length === 0 ? (
         <div className="empty-state">
-          No traces yet — prompt Hermes from Telegram or CLI
+          No Flows yet. Send a prompt to Hermes, then refresh.
         </div>
       ) : (
         <div className="trace-list">
-          {traces.map((trace) => (
-            <TraceCard
-              key={trace.id}
-              trace={trace}
-              isSelected={trace.id === selectedTraceId}
+          {traces.map((flow) => (
+            <FlowCard
+              key={flow.id}
+              flow={flow}
+              isSelected={flow.id === selectedTraceId}
               onSelect={onSelect}
-              relativeTime={relativeTime(trace.startedAt)}
+              relativeTime={relativeTime(flow.startedAt)}
             />
           ))}
         </div>
@@ -78,4 +78,4 @@ function TraceSidebar({
   );
 }
 
-export default TraceSidebar;
+export default FlowSidebar;

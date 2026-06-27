@@ -1,166 +1,137 @@
-# AIFlows — Hermes Trace Visualizer
+# AIFlows — Mission Control for Hermes Flows
 
-AIFlows watches a local Hermes profile and visualises completed agent turns as
-interactive React Flow graphs.
+AIFlows is a small **Mission Control** UI for watching completed agent runs. **Hermes** is the first adapter. A **Flow** is the observable replay of one completed agent run, and a **Step** is one visible action inside that replay: user prompt, tool call, tool result, or assistant response.
+
+The app reads Hermes data locally and presents it as route-based views:
+
+- **Mission Control** — the home dashboard
+- **Adapter** — the integration layer that exposes a source of Flows
+- **Hermes Profile** — a usable Hermes `state.db`
+- **Flow** — the replay of one completed run
+- **Step** — one visible event inside a Flow
+
+## How it works
 
 ```
-        Hermes Agent
-      (Telegram / CLI)
-             │
-             ▼  writes to state.db
-     ┌───────────────┐
-     │ Hermes Profile │
-     │   state.db     │
-     └───────┬───────┘
-             │ reads (read-only)
-     ┌───────┴───────┐
-     │  AIFlows API  │  Express + TypeScript
-     │ :3417         │
-     └───────┬───────┘
-             │ JSON polling (~2s)
-     ┌───────┴───────┐
-     │ AIFlows UI    │  Vite + React + React Flow
-     │ :5173         │
-     └───────────────┘
+Hermes Agent (Telegram / CLI)
+        │
+        ▼ writes to local state.db
+Hermes Profile
+        │
+        ▼ read-only access
+AIFlows backend (Express + TypeScript)
+        │
+        ▼ JSON routes
+AIFlows frontend (Vite + React)
 ```
 
-## Prerequisites
-
-- **Node.js 22+** (tested with v22.23.0)
-- **Hermes Agent** installed and running with at least one active profile
-- A modern browser (Chrome, Firefox, Edge)
+AIFlows never writes to Hermes storage. It only reads existing profile databases.
 
 ## Quick start
 
 ```bash
-# 1. Clone and install
-git clone <repo-url> aiflows
-cd aiflows
+# 1. Install dependencies
 npm install
 
 # 2. Build the frontend
 npm run build -w packages/frontend
 
-# 3. Start the backend (serves API + frontend)
+# 3. Start the backend (serves API + built frontend)
 HERMES_PROFILES_DIR=~/.hermes/profiles npm start
 
-# 4. Open in browser
+# 4. Open the app
 open http://127.0.0.1:3417
 ```
 
-### Development mode (two terminals)
+## Development mode
 
 ```bash
-# Terminal 1: backend with hot reload
+# Terminal 1: backend
 npm run dev:backend
 
-# Terminal 2: frontend with HMR
+# Terminal 2: frontend
 npm run dev:frontend
 ```
 
-Then open `http://127.0.0.1:5173` (Vite dev server proxies `/api/*` to backend).
+Then open `http://127.0.0.1:5173`.
+
+## Routes
+
+- `/` — Mission Control home
+- `/adapters/hermes` — Hermes profile selection
+- `/adapters/hermes/profiles/:profileId` — recent Flows for one profile
+- `/adapters/hermes/profiles/:profileId/flows/:flowId` — Flow replay
 
 ## Configuration
 
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `3417` | Backend HTTP port |
-| `HERMES_PROFILES_DIR` | `~/.hermes/profiles` | Directory containing Hermes profile folders |
-| `VITE_API_URL` | `http://127.0.0.1:3417` | Backend URL for Vite dev proxy |
+| `HERMES_PROFILES_DIR` | `~/.hermes/profiles` | Hermes profiles directory |
+| `VITE_API_URL` | `http://127.0.0.1:3417` | Backend URL used by Vite during development |
 
-## Architecture
+## Repository layout
 
-```
+```text
 packages/
-├── backend/          Express + TypeScript API
+├── backend/
 │   ├── src/
-│   │   ├── index.ts          Server setup, route handlers
-│   │   ├── types.ts          RunTrace / TraceEvent models
-│   │   ├── trace-reader.ts   SQLite query → normalized traces
-│   │   └── profiles.ts       Profile discovery
+│   │   ├── app.ts           API routes + SPA fallback
+│   │   ├── index.ts         server startup
+│   │   ├── profiles.ts      Hermes profile discovery
+│   │   ├── trace-reader.ts   SQLite → Flow normalisation
+│   │   └── types.ts         backend data models
 │   └── __tests__/
-│       └── trace-reader.test.ts
-└── frontend/         Vite + React + React Flow dashboard
+└── frontend/
     ├── src/
-    │   ├── App.tsx           Main layout, polling, state
-    │   ├── api.ts            Backend fetch helpers
-    │   ├── types.ts          Shared types
-    │   └── components/
-    │       ├── ProfileSelector.tsx
-    │       ├── StatusIndicator.tsx
-    │       ├── TraceSidebar.tsx
-    │       ├── TraceCard.tsx
-    │       ├── MainContent.tsx
-    │       ├── GraphView.tsx
-    │       └── DetailPanel.tsx
-    └── style.css
+    │   ├── App.tsx                 route shell
+    │   ├── api.ts                  fetch helpers
+    │   ├── components/             Mission Control pages + replay UI
+    │   └── style.css
+    └── __tests__/
 ```
 
-### Key decisions
+## Key decisions
 
 - **Read-only** — AIFlows never writes to Hermes storage.
-- **Polling** — Frontend polls backend every ~2s. No WebSockets in v0.
-- **Normalised model** — Backend converts raw Hermes rows into `RunTrace` /
-  `TraceEvent` before the frontend sees them. Future adapters can reuse the UI.
-- **Profile discovery** — Backend scans the Hermes profiles directory for
-  subdirectories containing `state.db`.
-- **Tool calls to `error` events** — Malformed tool-call JSON creates an `error`
-  event instead of crashing the trace.
+- **Adapter-first** — Hermes is the first adapter, but the UI is structured so more adapters can be added later.
+- **Flow language** — visible UI uses Flow/Step language instead of Trace language.
+- **Simple empty states** — the app prefers direct, low-noise empty/error messages.
+- **No chain-of-thought wording** — the UI and docs describe observable actions only.
 
 ## Demo walkthrough
 
-1. **Start Hermes** — Ensure Hermes is running and has at least one active
-   profile (e.g. `default` or a named profile).
+1. Start Hermes and make sure at least one profile has a usable `state.db`.
+2. Start AIFlows.
+3. Open Mission Control at `http://127.0.0.1:3417`.
+4. Click **Hermes**.
+5. Pick a Hermes profile.
+6. Open a Flow.
+7. Inspect the graph, timeline, and selected Step details.
 
-2. **Start AIFlows** — `npm start` from the project root. The backend scans
-   `~/.hermes/profiles/` for available profiles.
+## Verification
 
-3. **Open the dashboard** — Navigate to `http://127.0.0.1:3417` in a browser.
+```bash
+npm run typecheck
+npm test
+npm run build
+```
 
-4. **Select a profile** — Choose a Hermes profile from the dropdown. The
-   status indicator shows "Watching: profile-name".
+## Empty states
 
-5. **Prompt Hermes** — Send a message to Hermes from Telegram or CLI. Wait for
-   Hermes to finish answering.
+The app keeps empty states plain and readable.
 
-6. **Watch the trace appear** — After Hermes finishes, a new trace card appears
-   in the sidebar within ~2 seconds.
+Examples:
 
-7. **Click the trace** — The graph area shows the execution flow:
-   - **User Prompt** → first node (blue)
-   - **Tool Call** nodes (amber) — one per tool invocation
-   - **Tool Result** nodes (green) — results from each tool
-   - **Assistant Response** → last node (purple)
+- **No Hermes profiles** — `No Hermes data yet` / `No Hermes profiles found`
+- **No Flows** — `No Flows yet. Send a prompt to Hermes, then refresh.`
+- **Unknown route** — `Route not found`
 
-8. **Inspect details** — Click any node to see full content in the detail panel
-   at the bottom. Scrollable monospace view preserves whitespace.
-
-9. **Navigate** — Pan and zoom the graph canvas. Select different traces from
-   the sidebar to compare runs.
-
-## Demo checklist
-
-- [ ] Backend starts without errors
-- [ ] `GET /health` returns `{ "ok": true }`
-- [ ] `GET /api/profiles` lists available profiles
-- [ ] `GET /api/profiles/:id/traces` returns recent traces for a known profile
-- [ ] `GET /api/traces/:traceId` returns full trace with events
-- [ ] Unknown profile returns 404 JSON
-- [ ] Profile selector shows loading skeleton, empty state, and error state
-- [ ] Trace sidebar shows loading skeleton, empty state, and error state
-- [ ] Graph area shows placeholder, loading, and error states
-- [ ] Graph renders nodes with distinct colors per event type
-- [ ] Detail panel shows full event content
-- [ ] Polling detects new traces within ~2 seconds
-- [ ] Backend-offline indicator shows when the server is unreachable
-- [ ] Profile selection persists across page refresh
-
-## Out of scope (v0)
+## Out of scope
 
 - Running or controlling Hermes from AIFlows
-- WebSocket / SSE streaming
 - Authentication
-- Multi-profile simultaneous watching
+- WebSocket / SSE streaming
 - Remote Hermes connections
-- Editable workflow graphs
+- Editable workflows
 - Chain-of-thought visualisation
