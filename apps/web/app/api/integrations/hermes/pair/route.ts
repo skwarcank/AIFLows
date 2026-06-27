@@ -1,0 +1,42 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+import { createSupabaseWorkspaceStore } from '@/lib/app-state';
+import { createSupabaseHermesPairingStore, createHermesPairingSession } from '@/lib/hermes-pairing';
+import { createRouteSupabaseClient } from '@/lib/supabase/route';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+export async function POST(request: NextRequest) {
+  const supabase = createRouteSupabaseClient(request);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const workspaceStore = createSupabaseWorkspaceStore(supabase);
+    const pairingStore = createSupabaseHermesPairingStore(supabase, workspaceStore);
+    const pairing = await createHermesPairingSession(pairingStore, {
+      id: session.user.id,
+      email: session.user.email,
+    });
+
+    return NextResponse.json({
+      integration: pairing.integration,
+      workspace: pairing.workspace,
+      pairing: {
+        command: pairing.command,
+        expiresAt: pairing.expiresAt,
+        ttlMinutes: pairing.ttlMinutes,
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Could not create Hermes pairing session.';
+    const status = message.includes('already active') ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
+}

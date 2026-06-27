@@ -152,7 +152,32 @@ After the initial SaaS vertical slice:
 - [ ] Sign in with GitHub OAuth.
 - [ ] Confirm the user lands in the authenticated app shell.
 - [ ] Confirm unauthenticated users are redirected to `/login`.
+- [ ] Create a Hermes Integration from the onboarding screen.
+- [ ] Copy the `npx aiflows-connector connect --token <token>` command.
+- [ ] Run that command on the same machine/VPS as Hermes.
+- [ ] Confirm the pairing screen starts polling integration status.
 
-## 7. Confirmation rule
+## 7. Hermes pairing flow
+
+Status: implemented in the app; connector execution still requires Krzysztof on the Hermes machine.
+
+What the app now does:
+
+1. Creates a pending Hermes Integration in Supabase.
+2. Generates a short-lived one-time pairing token.
+3. Stores only the token hash server-side.
+4. Shows the command:
+
+```bash
+npx aiflows-connector connect --token <token>
+```
+
+5. Polls the integration status after the command is shown.
+
+Krzysztof step:
+
+- Run the command on the same machine or VPS where Hermes is installed.
+
+## 8. Confirmation rule
 
 When a step depends on Supabase, GitHub, or Vercel setup in the browser, Krzysztof must confirm completion before Amon treats that setup as real.

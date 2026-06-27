@@ -19,7 +19,7 @@ export default async function AppPage() {
 
   return (
     <main className="screen app-screen">
-      <AppShell email={data.session.user.email ?? 'signed-in user'} workspaceName={state.workspace.name} integration={state.integration} />
+      <AppShell email={data.session.user.email ?? 'signed-in user'} workspace={state.workspace} integration={state.integration} />
     </main>
   );
 }
