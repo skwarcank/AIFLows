@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import FlowGraph from '@/components/flow-graph';
 import type { IntegrationRecord, WorkspaceRecord } from '@/lib/app-state';
 import type { MissionControlData, MissionFlow } from '@/lib/mission-control';
 
@@ -197,6 +198,7 @@ function FlowReplay({ flow }: { flow: MissionFlow }) {
       <h3>{flow.title}</h3>
       <p className="muted">{flow.model ?? 'unknown model'} · {flow.source ?? 'unknown source'} · {flow.status}</p>
       <div className="replay-section"><h4>Prompt</h4><p>{flow.prompt}</p></div>
+      <div className="replay-section graph-section"><h4>Graph</h4><FlowGraph flow={flow} /></div>
       <div className="timeline">
         {flow.steps.map((step) => (
           <div className="timeline-step" key={step.id}>
