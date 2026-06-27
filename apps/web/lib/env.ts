@@ -20,3 +20,7 @@ export function getAppUrl(): string {
 export function getAuthCallbackUrl(): string {
   return new URL('/auth/callback', getAppUrl()).toString();
 }
+
+export function getSupabaseServiceRoleKey(): string {
+  return requireEnv('SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY);
+}

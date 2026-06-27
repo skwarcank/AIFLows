@@ -1,0 +1,22 @@
+{
+  "name": "aiflows-connector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "aiflows-connector": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

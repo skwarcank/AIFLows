@@ -107,7 +107,10 @@ Then fill it like this:
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
+
+`SUPABASE_SERVICE_ROLE_KEY` is required only on the server side for connector pairing/token exchange. Never expose it in browser code.
 
 Important: `apps/web` is the Next.js project root, so this app reads env vars from `apps/web/.env.local` (not the repo root `.env`).
 
