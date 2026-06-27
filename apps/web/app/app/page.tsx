@@ -6,20 +6,22 @@ import { createReadOnlySupabaseServerClient } from '@/lib/supabase/server';
 
 export default async function AppPage() {
   const supabase = createReadOnlySupabaseServerClient();
-  const { data } = await supabase.auth.getSession();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!data.session) {
+  if (!user) {
     redirect('/login');
   }
 
   const state = await ensureAppShellState(createSupabaseWorkspaceStore(supabase), {
-    id: data.session.user.id,
-    email: data.session.user.email,
+    id: user.id,
+    email: user.email,
   });
 
   return (
     <main className="screen app-screen">
-      <AppShell email={data.session.user.email ?? 'signed-in user'} workspace={state.workspace} integration={state.integration} />
+      <AppShell email={user.email ?? 'signed-in user'} workspace={state.workspace} integration={state.integration} />
     </main>
   );
 }

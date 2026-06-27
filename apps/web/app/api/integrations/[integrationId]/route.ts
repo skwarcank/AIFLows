@@ -8,10 +8,10 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest, { params }: { params: { integrationId: string } }) {
   const supabase = createRouteSupabaseClient(request);
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

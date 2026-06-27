@@ -10,10 +10,10 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   const supabase = createRouteSupabaseClient(request);
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
     const workspaceStore = createSupabaseWorkspaceStore(supabase);
     const pairingStore = createSupabaseHermesPairingStore(supabase, workspaceStore);
     const pairing = await createHermesPairingSession(pairingStore, {
-      id: session.user.id,
-      email: session.user.email,
+      id: user.id,
+      email: user.email,
     });
 
     return NextResponse.json({

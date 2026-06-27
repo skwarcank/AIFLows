@@ -5,9 +5,11 @@ import { createReadOnlySupabaseServerClient } from '@/lib/supabase/server';
 
 export default async function LoginPage() {
   const supabase = createReadOnlySupabaseServerClient();
-  const { data } = await supabase.auth.getSession();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (data.session) {
+  if (user) {
     redirect('/app');
   }
 
