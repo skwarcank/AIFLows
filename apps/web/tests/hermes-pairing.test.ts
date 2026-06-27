@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { HermesPairingStore } from '../lib/hermes-pairing';
 import { buildDefaultIntegrationName, createHermesPairingSession } from '../lib/hermes-pairing';
@@ -16,6 +16,10 @@ function createStore(overrides: Partial<HermesPairingStore>): HermesPairingStore
 }
 
 describe('Hermes pairing service', () => {
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_APP_URL = 'https://app.example.com';
+  });
+
   it('builds the default integration name from the workspace name', () => {
     expect(buildDefaultIntegrationName('Krzysztof Workspace')).toBe('Krzysztof Workspace Hermes');
   });
@@ -44,7 +48,8 @@ describe('Hermes pairing service', () => {
     const result = await createHermesPairingSession(store, { id: 'user-1', email: 'krzysztof@example.com' });
 
     expect(result.integration.status).toBe('pending');
-    expect(result.command).toMatch(/^npx aiflows-connector connect --token [0-9a-f]{48}$/);
+    expect(result.command).toContain("curl -fsSL '");
+    expect(result.command).toMatch(/\/api\/connectors\/install\.sh' \| bash -s -- --token '[0-9a-f]{48}'$/);
     expect(calls[0]).toBe('findFirstIntegration');
     expect(calls[1]).toBe('createIntegration:workspace-1:Alpha Workspace Hermes');
     expect(calls[2]).toBe('revoke:integration-1');

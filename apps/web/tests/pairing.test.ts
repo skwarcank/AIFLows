@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { buildConnectorCommand, createPairingSecret, getPairingTokenTtlMinutes, sha256Hex } from '../lib/pairing';
+import {
+  buildConnectorCommand,
+  buildConnectorInstallUrl,
+  createPairingSecret,
+  getPairingTokenTtlMinutes,
+  sha256Hex,
+  shellQuote,
+} from '../lib/pairing';
 
 describe('pairing helpers', () => {
   it('hashes tokens with sha256 hex output', () => {
@@ -21,8 +28,18 @@ describe('pairing helpers', () => {
     vi.useRealTimers();
   });
 
-  it('builds the connector command shown to the user', () => {
-    expect(buildConnectorCommand('secret-token')).toBe('npx aiflows-connector connect --token secret-token');
+  it('builds the connector curl install command shown to the user', () => {
+    expect(buildConnectorCommand('secret-token', 'https://app.example.com')).toBe(
+      "curl -fsSL 'https://app.example.com/api/connectors/install.sh' | bash -s -- --token 'secret-token'",
+    );
+  });
+
+  it('normalizes the connector install url against the app url', () => {
+    expect(buildConnectorInstallUrl('https://app.example.com/dashboard')).toBe('https://app.example.com/api/connectors/install.sh');
+  });
+
+  it('shell-quotes single quotes safely', () => {
+    expect(shellQuote("can't")).toBe("'can'\\''t'");
   });
 
   it('keeps the token ttl pragmatic and short lived', () => {

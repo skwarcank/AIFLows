@@ -156,7 +156,7 @@ After the initial SaaS vertical slice:
 - [ ] Confirm the user lands in the authenticated app shell.
 - [ ] Confirm unauthenticated users are redirected to `/login`.
 - [ ] Create a Hermes Integration from the onboarding screen.
-- [ ] Copy the `npx aiflows-connector connect --token <token>` command.
+- [ ] Copy the `curl -fsSL <app-url>/api/connectors/install.sh | bash -s -- --token <token>` command.
 - [ ] Run that command on the same machine/VPS as Hermes.
 - [ ] Confirm the pairing screen starts polling integration status.
 
@@ -172,8 +172,10 @@ What the app now does:
 4. Shows the command:
 
 ```bash
-npx aiflows-connector connect --token <token>
+curl -fsSL <app-url>/api/connectors/install.sh | bash -s -- --token <token>
 ```
+
+The app fills in the real app URL and one-time token. This avoids npm publishing; the install script downloads the connector source from GitHub, builds it locally, then runs the connector pairing command.
 
 5. Polls the integration status after the command is shown.
 

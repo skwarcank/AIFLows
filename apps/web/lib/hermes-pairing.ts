@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
 import type { IntegrationRecord, WorkspaceRecord, WorkspaceStore } from './app-state';
+import { getAppUrl } from './env';
 import { buildConnectorCommand, createPairingSecret, getPairingTokenTtlMinutes } from './pairing';
 
 export interface PairingSession {
@@ -69,7 +70,7 @@ export async function createHermesPairingSession(store: HermesPairingStore, user
     integration,
     workspace,
     token: secret.token,
-    command: buildConnectorCommand(secret.token),
+    command: buildConnectorCommand(secret.token, getAppUrl()),
     expiresAt: secret.expiresAt,
     ttlMinutes: getPairingTokenTtlMinutes(),
   };

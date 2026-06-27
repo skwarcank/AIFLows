@@ -23,8 +23,16 @@ export function sha256Hex(value: string): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
-export function buildConnectorCommand(token: string): string {
-  return `npx aiflows-connector connect --token ${token}`;
+export function shellQuote(value: string): string {
+  return `'${value.split("'").join("'\\''")}'`;
+}
+
+export function buildConnectorInstallUrl(apiBaseUrl: string): string {
+  return new URL('/api/connectors/install.sh', apiBaseUrl).toString();
+}
+
+export function buildConnectorCommand(token: string, apiBaseUrl: string): string {
+  return `curl -fsSL ${shellQuote(buildConnectorInstallUrl(apiBaseUrl))} | bash -s -- --token ${shellQuote(token)}`;
 }
 
 export function getPairingTokenTtlMinutes(): number {
