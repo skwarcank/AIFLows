@@ -73,13 +73,23 @@ Amon should maintain `.env.example` with all required variables.
 
 Required for the web app shell:
 
+Create the file in the Next.js app root:
+
+```bash
+cp apps/web/.env.local.example apps/web/.env.local
+```
+
+Then fill it like this:
+
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-Keep this guide and `.env.example` synchronized.
+Important: `apps/web` is the Next.js project root, so this app reads env vars from `apps/web/.env.local` (not the repo root `.env`).
+
+Keep this guide and `apps/web/.env.local.example` synchronized.
 
 ## 4. GitHub repository and Actions
 
