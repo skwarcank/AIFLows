@@ -10,37 +10,6 @@ begin
 end;
 $$;
 
-create or replace function public.workspace_has_access(target_workspace_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.workspace_members wm
-    where wm.workspace_id = target_workspace_id
-      and wm.user_id = auth.uid()
-  );
-$$;
-
-create or replace function public.workspace_is_owner(target_workspace_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.workspace_members wm
-    where wm.workspace_id = target_workspace_id
-      and wm.user_id = auth.uid()
-      and wm.role = 'owner'
-  );
-$$;
-
 create table if not exists public.workspaces (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -138,6 +107,36 @@ create table if not exists public.connector_tokens (
   created_at timestamptz not null default now()
 );
 
+create or replace function public.workspace_has_access(target_workspace_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.workspace_members wm
+    where wm.workspace_id = target_workspace_id
+      and wm.user_id = auth.uid()
+  );
+$$;
+
+create or replace function public.workspace_is_owner(target_workspace_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.workspace_members wm
+    where wm.workspace_id = target_workspace_id
+      and wm.user_id = auth.uid()
+      and wm.role = 'owner'
+  );
+$$;
 create index if not exists workspaces_created_by_idx on public.workspaces (created_by);
 create index if not exists workspace_members_user_id_idx on public.workspace_members (user_id);
 create index if not exists integrations_workspace_provider_idx on public.integrations (workspace_id, provider, external_id);
