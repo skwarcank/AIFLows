@@ -6,6 +6,10 @@ function requireEnv(name: string, value: string | undefined): string {
   return value;
 }
 
+export function isMissingRequiredEnvError(error: unknown): boolean {
+  return error instanceof Error && error.message.startsWith('Missing required environment variable:');
+}
+
 export function getPublicSupabaseConfig() {
   return {
     url: requireEnv('NEXT_PUBLIC_SUPABASE_URL', process.env.NEXT_PUBLIC_SUPABASE_URL),
