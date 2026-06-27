@@ -24,10 +24,22 @@ Status: to be completed by Krzysztof in browser.
 Steps:
 
 1. Create a Supabase project for AIFlows SaaS.
-2. Copy the project URL and anon key into the repo `.env` file using the `.env.example` template.
+2. Copy the project URL and anon / publishable key into `apps/web/.env.local` using `apps/web/.env.local.example` as the template.
 3. Keep the service role key private; do not paste it into browser-facing code.
-4. For now, apply migrations manually from `supabase/migrations/` when they exist.
+4. Apply migrations manually from `supabase/migrations/`.
 5. Confirm the database tables and RLS policies exist before trying browser sign-in.
+
+### Manual migration application
+
+Because production migrations are not automated yet, apply them yourself in the Supabase dashboard:
+
+1. Open **Supabase Dashboard → SQL Editor**.
+2. Create a new query.
+3. Open each file in `supabase/migrations/` in timestamp order.
+4. Paste the SQL into the editor and run it.
+5. Repeat until every migration file has been applied.
+6. Open **Table Editor** and confirm the schema exists.
+7. Do not assume the tables exist until you have verified them in the dashboard.
 
 ## 2. Supabase Auth
 
@@ -69,7 +81,7 @@ If Supabase shows a callback like `https://<project-ref>.supabase.co/auth/v1/cal
 
 ## 3. Environment variables
 
-Amon should maintain `.env.example` with all required variables.
+Amon should maintain `apps/web/.env.local.example` with all required variables for the web app shell.
 
 Required for the web app shell:
 
