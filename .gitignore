@@ -15,6 +15,7 @@ out/
 !.env.example
 !apps/web/.env.local.example
 !supabase/.env.local.example
+supabase/.temp/
 
 # Local Hermes/project-agent state
 .hermes/
