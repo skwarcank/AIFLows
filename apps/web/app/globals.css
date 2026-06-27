@@ -1,0 +1,221 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(99, 102, 241, 0.24), transparent 40%),
+    linear-gradient(180deg, #09111f 0%, #050912 100%);
+  color: #e5eefb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.screen {
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.auth-screen {
+  display: grid;
+  place-items: center;
+}
+
+.auth-card,
+.mission-control-shell {
+  width: min(960px, 100%);
+  margin: 0 auto;
+}
+
+.auth-card {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 24px;
+  padding: 32px;
+  background: rgba(2, 6, 23, 0.78);
+  box-shadow: 0 32px 80px rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(20px);
+}
+
+.auth-card-header h1,
+.topbar h1,
+.hero-panel h2,
+.info-card h3 {
+  margin: 0;
+}
+
+.auth-card-header {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #8b9dc7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+}
+
+.muted {
+  color: #9fb0d0;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.field span {
+  color: #cad5ea;
+  font-size: 0.92rem;
+}
+
+.field input {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.68);
+  color: #f8fbff;
+  padding: 14px 16px;
+}
+
+.field input:focus {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 1px;
+}
+
+.auth-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+button {
+  border: 0;
+  border-radius: 14px;
+  padding: 13px 16px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.primary-btn,
+.github-btn {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: white;
+}
+
+.secondary-btn,
+.ghost-btn {
+  background: rgba(30, 41, 59, 0.82);
+  color: #e5eefb;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+  margin: 22px 0 14px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: rgba(148, 163, 184, 0.24);
+}
+
+.github-btn {
+  width: 100%;
+}
+
+.status-text {
+  min-height: 1.4rem;
+  margin: 16px 0 0;
+  color: #9fb0d0;
+}
+
+.status-visible {
+  color: #d9e6ff;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.hero-panel,
+.info-card {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 22px;
+  background: rgba(2, 6, 23, 0.74);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.35);
+}
+
+.hero-panel {
+  padding: 28px;
+}
+
+.hero-panel p:last-child {
+  max-width: 58ch;
+  color: #d9e6ff;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.info-card {
+  padding: 22px;
+}
+
+.info-card p {
+  color: #b8c5df;
+}
+
+@media (max-width: 720px) {
+  .screen {
+    padding: 18px;
+  }
+
+  .auth-actions,
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

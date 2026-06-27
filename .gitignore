@@ -5,11 +5,15 @@ node_modules/
 dist/
 build/
 coverage/
+.next/
+out/
+.vercel/
 
 # Environment / secrets
 .env
 .env.*
 !.env.example
+!apps/web/.env.local.example
 
 # Local Hermes/project-agent state
 .hermes/
@@ -21,6 +25,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .DS_Store
+
+# TypeScript build info
+*.tsbuildinfo
 
 # Editor local state
 .vscode/

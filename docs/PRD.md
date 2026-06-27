@@ -1,405 +1,401 @@
-# PRD: AIFlows v0 — Hermes Trace Visualizer
+# PRD: AIFlows — Mission Control for Agent Flows
 
 ## Problem Statement
 
-Hermes users can prompt their agents from places like Telegram or the CLI, but the execution is mostly experienced as a linear chat answer. For a technical reviewer, mentor, or senior developer, it is hard to quickly see what actually happened during a Hermes turn: what the user asked, whether the agent used tools, what tool results came back, and where the final answer fits in the execution path.
+AIFlows currently works as a first Hermes trace visualizer, but the product still feels like a technical log viewer rather than **Mission Control for watching agents work**.
 
-Krzysztof needs a first working demo that proves he can build a real app, not just a mockup. The demo should show progress toward an agent observability product by visualizing real Hermes activity from local profile storage. The first version should be small, truthful, and technically credible.
+A user can run Hermes locally and inspect completed activity, but the journey is too flat: profile selection, trace list, graph, and detail inspection are all presented as one dashboard rather than a clear product experience. The app also still speaks mostly in "trace" language, which is accurate technically but does not express the larger direction: AIFlows should eventually watch multiple agent systems through adapters.
+
+The immediate problem is not that AIFlows needs more raw features. The immediate problem is that it needs a stronger product structure:
+
+1. AIFlows should feel like the first version of Mission Control, not just a trace viewer.
+2. Hermes should become the first real adapter, not the entire product identity.
+3. Users should move through a clear path: adapter → Hermes profile → recent Flows → Flow Replay.
+4. The replay should be visual, truthful, and easy to understand on both desktop and mobile.
+5. The architecture should make future adapters possible without building the full plugin/SaaS platform now.
 
 ## Solution
 
-AIFlows v0 is a local developer web dashboard that watches one selected local Hermes profile and turns each completed Hermes user→assistant turn into a visual trace graph using React Flow.
+Upgrade AIFlows from a Hermes trace dashboard into an **adapter-first Mission Control experience**.
 
-The user continues using Hermes normally from Telegram or the CLI. AIFlows reads the selected profile's local Hermes `state.db`, detects completed turns after Hermes answers, normalizes the observable messages/tool calls/tool results into trace events, and renders a graph for each trace.
+The first working adapter is Hermes. The user opens Mission Control, sees adapter bubbles/cards, chooses Hermes, chooses a Hermes profile, sees recent completed Flows for that profile, and opens a graph-forward Flow Replay.
 
-AIFlows does not run Hermes, does not control agents, and does not show private chain-of-thought. It visualizes observable Hermes execution data.
+A **Flow** is one completed observable Hermes turn: one user prompt through the final assistant response. A **Step** is one observable event inside that Flow: user prompt, tool call, tool result, error, or assistant response. AIFlows must stay truthful: it visualizes observable data from Hermes storage and must not claim to show private chain-of-thought.
 
-### Product sentence
+The backend should expose adapter-shaped API routes with Hermes as the first adapter. The frontend should use real routes/deep links for the main product journey.
 
-> AIFlows watches one Hermes profile and turns each completed Hermes turn into a visual trace graph.
+### North Star
 
-### v0 demo promise
+> AIFlows feels like the first version of Mission Control, not just a trace viewer.
 
-1. Start AIFlows locally on the same VPS/machine as Hermes.
-2. Open the AIFlows dashboard in a browser.
-3. Select one Hermes profile.
-4. Prompt Hermes normally from Telegram or CLI.
-5. After Hermes finishes answering, AIFlows automatically detects the completed turn.
-6. AIFlows shows a new trace in the sidebar and renders its React Flow graph.
+### Immediate Product Journey
 
-## Target User / Demo Context
+```text
+/ Mission Control
+  ↓ click Hermes adapter
+/adapters/hermes Hermes Profiles
+  ↓ click profile
+/adapters/hermes/profiles/:profileId Recent Flows
+  ↓ click Flow
+/adapters/hermes/profiles/:profileId/flows/:flowId Flow Replay
+```
 
-Primary v0 user:
+### Product Vocabulary
 
-1. A developer using Hermes locally or on a VPS.
-2. A senior developer reviewing whether Krzysztof can build a functioning web app.
-3. Krzysztof, using the project to demonstrate practical web-app implementation, data parsing, and product thinking.
+| Term | Meaning |
+|---|---|
+| Adapter | A type of agent system AIFlows can watch, e.g. Hermes. |
+| Hermes Profile | A concrete Hermes profile/default setup discovered under the Hermes adapter. |
+| Flow | One completed user prompt → final assistant answer. |
+| Step | One observable event inside a Flow. |
+| Flow Replay | The graph-forward replay view for a selected Flow. |
+| Mission Control | The overall AIFlows experience for watching agent work. |
 
-v0 is a local developer demo, not a deployed SaaS product.
+Internal code may keep existing `trace` names where a full rename would create churn. User-facing UI should use **Flow** language.
 
 ## User Stories
 
-1. As a Hermes user, I want to select one local Hermes profile, so that AIFlows knows which profile to watch.
-2. As a Hermes user, I want AIFlows to show whether it is watching a profile, so that I know the app is connected to local Hermes storage.
-3. As a Hermes user, I want to keep prompting Hermes from Telegram or CLI, so that AIFlows does not interrupt my existing workflow.
-4. As a Hermes user, I want AIFlows to detect new completed turns automatically, so that I do not need to upload logs or manually refresh files.
-5. As a Hermes user, I want each completed turn to appear as a trace in a sidebar, so that I can browse recent Hermes activity.
-6. As a Hermes user, I want each trace to show its source when detectable, so that I can distinguish Telegram, CLI, or unknown-origin turns.
-7. As a Hermes user, I want each trace to show a prompt preview, so that I can recognize which turn I am inspecting.
-8. As a Hermes user, I want each trace to show a timestamp, so that I can identify recent activity quickly.
-9. As a Hermes user, I want selecting a trace to render a React Flow graph, so that I can visually inspect the execution path.
-10. As a Hermes user, I want the graph to always include the user prompt, so that the trace starts with the original task.
-11. As a Hermes user, I want the graph to include the final assistant response, so that I can see the outcome of the turn.
-12. As a Hermes user, I want tool calls to appear as graph nodes when Hermes stored them, so that I can see which tools the agent used.
-13. As a Hermes user, I want tool results to appear as graph nodes when Hermes stored them, so that I can inspect what came back from tools.
-14. As a Hermes user, I want traces with no tool calls to still render cleanly, so that ordinary chat turns still work.
-15. As a Hermes user, I want to click a node and see details, so that long prompts, responses, or tool results are readable outside the graph node.
-16. As a Hermes user, I want AIFlows to avoid fake reasoning nodes, so that the visualization remains truthful and technically credible.
-17. As a reviewer, I want the app to use real Hermes data, so that I can evaluate an actual integration rather than a static mock.
-18. As a reviewer, I want the app to have a clear local-dev setup, so that I can run it and verify behavior quickly.
-19. As a developer, I want the backend to expose simple JSON APIs, so that the frontend can remain focused on visualization.
-20. As a developer, I want a normalized trace model separate from Hermes raw database rows, so that future adapters can be added without rewriting the UI.
-21. As a developer, I want React Flow nodes and edges generated from normalized trace events, so that graph rendering stays decoupled from database parsing.
-22. As a developer, I want polling instead of WebSockets for v0, so that live-after-answer behavior is simpler and less error-prone.
-23. As a developer, I want the app to treat one user→assistant exchange as a trace, so that long Hermes sessions do not become one giant graph.
-24. As a developer, I want intermediate assistant messages with tool calls to be treated differently from final assistant answers, so that graph structure reflects Hermes execution accurately.
-25. As a developer, I want v0 to work with either Telegram or CLI-origin turns when source is detectable, so that the demo is not blocked by platform-specific filtering.
+1. As a local AIFlows user, I want to open Mission Control, so that the app feels like a place to watch agent systems rather than a raw trace viewer.
+2. As a local AIFlows user, I want to see Hermes as an active adapter bubble, so that I know AIFlows can currently watch Hermes.
+3. As a local AIFlows user, I want to see future adapters as disabled coming-soon bubbles, so that I understand the platform direction without being misled into fake functionality.
+4. As a Hermes user, I want to click the Hermes adapter, so that I can choose which Hermes profile to inspect.
+5. As a Hermes user, I want the Hermes page to show profile cards, so that profile choice is explicit and simple.
+6. As a Hermes user who only uses the default Hermes setup, I want AIFlows to show the default Hermes profile/setup as usable, so that I am not blocked by not having custom profiles.
+7. As a Hermes user with named profiles, I want each discovered profile to appear by name, so that I can choose the correct agent/persona context.
+8. As a Hermes user, I want to click a profile and see recent Flows for that profile, so that I inspect one agent context at a time.
+9. As a Hermes user, I want the recent Flows list to show prompt preview, model, and timestamp, so that I can recognize a completed run quickly.
+10. As a Hermes user, I want to see the latest 20 Flows first, so that the page stays fast and readable.
+11. As a Hermes user, I want a Load more action, so that I can browse older Flows without search/filter complexity.
+12. As a Hermes user, I want a simple empty state when no completed Flows exist, so that I know to send a prompt to Hermes and refresh.
+13. As a Hermes user, I want to click a Flow and open a replay route, so that I can inspect a completed run in detail.
+14. As a Hermes user, I want the Flow Replay header to prioritize the original prompt, so that the replay starts from the task I gave the agent.
+15. As a Hermes user, I want the graph to be linear and chronological, so that it truthfully reflects observable execution order.
+16. As a Hermes user, I want graph nodes to be minimal, so that the visual graph stays clean.
+17. As a Hermes user, I want each Step type to look visually distinct, so that I can scan the Flow quickly.
+18. As a Hermes user, I want clicking a graph node to update the inspector immediately, so that graph and details feel connected.
+19. As a Hermes user, I want the right inspector to show timeline and selected Step detail together on desktop, so that I can keep context while inspecting a Step.
+20. As a Hermes user, I want mobile Flow Replay to use tabs for Graph, Timeline, and Details, so that the app is usable on a phone.
+21. As a Hermes user, I want Step details to be human-readable, so that I can understand what happened without reading raw JSON.
+22. As a Hermes user, I want known tool calls to be summarized in friendly language, so that file, terminal, browser, memory, and skill activity is easy to follow.
+23. As a Hermes user, I want file write/patch Steps to stay simple, so that AIFlows does not become a noisy diff/code-review tool too early.
+24. As a Hermes user, I want deep links to work, so that refreshing or directly opening a profile/Flow URL loads the right view.
+25. As a developer, I want backend routes to be adapter-shaped, so that Hermes is the first adapter and future adapters fit the same product model.
+26. As a developer, I want the frontend to render static disabled coming-soon adapters, so that the backend remains honest and only exposes working adapters.
+27. As a developer, I want frontend route/navigation tests, so that Mission Control pages do not regress.
+28. As a developer, I want backend adapter/API contract tests, so that the frontend can rely on stable adapter-shaped responses.
+29. As a future SaaS builder, I want the Flow model to stay independent from raw Hermes database rows, so that a future connector can send the same normalized shape.
+30. As a reviewer, I want AIFlows to avoid chain-of-thought claims, so that the product is technically credible and truthful.
 
 ## Implementation Decisions
 
-### Stack
+### Scope of this PRD
 
-- Frontend: React + Vite + TypeScript + React Flow.
-- Backend: Node.js + Express + TypeScript.
-- SQLite reader: prefer `better-sqlite3` for simple synchronous reads; if native install issues appear, fall back to another SQLite package.
-- Local developer mode first; deployment packaging is not part of v0.
+This PRD covers the next product update after the initial working version. It replaces the old v0 framing of "Hermes Trace Visualizer" with the next milestone: **adapter-first Mission Control with Hermes Flow Replay**.
 
-### Hermes data source
+It does not include self-hosted password protection, SaaS accounts, remote connectors, or live running Flows. Those are later milestones.
 
-AIFlows v0 reads local Hermes profile storage from the selected profile's `state.db`.
+### Adapter-first architecture
 
-Observed Hermes profile structure:
+Hermes should become the first concrete adapter.
 
-- Profiles live under the Hermes profiles directory.
-- Each profile has a `state.db` SQLite database.
-- The database includes `sessions` and `messages` tables.
-
-Observed `sessions` fields useful to AIFlows:
-
-- `id`
-- `source`
-- `user_id`
-- `model`
-- `started_at`
-- `ended_at`
-- `title`
-- `message_count`
-- `tool_call_count`
-
-Observed `messages` fields useful to AIFlows:
-
-- `id`
-- `session_id`
-- `role`
-- `content`
-- `tool_call_id`
-- `tool_calls`
-- `tool_name`
-- `timestamp`
-- `finish_reason`
-- `platform_message_id`
-
-### Trace definition
-
-A trace is one completed Hermes user→assistant turn, not an entire Hermes session.
-
-A completed v0 trace starts at a `messages.role = "user"` row and ends at a later `messages.role = "assistant"` row with `finish_reason = "stop"`.
-
-Messages between the starting user message and final assistant message are included when relevant:
-
-- assistant messages with `finish_reason = "tool_calls"` become tool-call events when `tool_calls` is present.
-- tool messages become tool-result events.
-- assistant message with `finish_reason = "stop"` becomes the final answer event.
-
-### Source badge
-
-AIFlows should show the source if detectable from the related Hermes session, for example:
-
-- `telegram`
-- `cli`
-- `unknown`
-
-v0 should not filter only Telegram. It should show any new completed turn from the selected profile, with a source badge where available.
-
-### Normalized data model
-
-The backend should convert raw Hermes rows into a stable app-level model before the frontend sees them.
-
-Conceptual shape:
-
-```ts
-type RunTrace = {
-  id: string;
-  profile: string;
-  sessionId: string;
-  source: "telegram" | "cli" | "unknown" | string;
-  status: "completed";
-  startedAt: string;
-  finishedAt: string;
-  promptPreview: string;
-  finalAnswerPreview: string;
-  events: TraceEvent[];
-};
-
-type TraceEvent = {
-  id: string;
-  type:
-    | "user_prompt"
-    | "tool_call"
-    | "tool_result"
-    | "assistant_response"
-    | "error";
-  title: string;
-  content?: string;
-  timestamp?: string;
-  toolName?: string;
-  raw?: unknown;
-};
-```
-
-### React Flow graph behavior
-
-The frontend converts `TraceEvent[]` into React Flow nodes and edges.
-
-Minimum graph:
+The backend should introduce an adapter seam roughly equivalent to:
 
 ```text
-[User Prompt] → [Assistant Response]
+Adapter → Hermes Profiles → Flows → Steps
 ```
 
-Tool-rich graph:
+The Hermes adapter is responsible for:
+
+- discovering Hermes profiles, including the default Hermes setup when usable;
+- listing completed Flows for a selected profile with pagination;
+- returning one Flow with normalized Steps;
+- hiding raw database details from the frontend.
+
+Future adapters such as OpenCode, Claude Code, or Codex should not be implemented now, but the architecture should make them plausible later.
+
+### Adapter-shaped API routes
+
+The API should move from profile/trace-specific routes toward adapter-shaped routes.
+
+Conceptual routes:
 
 ```text
-[User Prompt]
-   ↓
-[Tool Call: search_files]
-   ↓
-[Tool Result]
-   ↓
-[Tool Call: read_file]
-   ↓
-[Tool Result]
-   ↓
-[Assistant Response]
+GET /api/adapters
+GET /api/adapters/hermes/profiles
+GET /api/adapters/hermes/profiles/:profileId/flows?limit=20&offset=0
+GET /api/adapters/hermes/profiles/:profileId/flows/:flowId
 ```
 
-Graph rules:
+The backend should return real working adapters only. Coming-soon adapter cards are static frontend UI, not backend records.
 
-- Nodes must represent real observable Hermes data.
-- Edges should show chronological flow.
-- The selected trace is rendered in the main graph canvas.
-- The sidebar lists recent traces.
-- Clicking a node shows full details in a details panel.
-- React Flow is used as a visualization layer, not an editable workflow builder.
+Low-level response details are left to implementation discretion as long as they support the product behavior and are covered by tests.
 
-### Polling behavior
+### Mission Control routing
 
-v0 should use polling, not WebSockets.
+The frontend should use real routes/deep links:
 
-Suggested behavior:
+```text
+/
+/adapters/hermes
+/adapters/hermes/profiles/:profileId
+/adapters/hermes/profiles/:profileId/flows/:flowId
+```
 
-- Backend reads/polls the selected profile database.
-- Frontend polls backend endpoints every ~2 seconds.
-- New traces appear automatically after Hermes completes an answer.
+Profile names can appear directly in URLs as readable URL-encoded values. Flow URLs can use generated technical IDs.
 
-The v0 experience is “live after answer,” not true real-time streaming while Hermes is thinking.
+Refreshing or directly opening any route should load the corresponding page, assuming the backend data exists.
 
-### API shape
+### Mission Control home
 
-The exact endpoint names may change, but v0 should expose simple API seams equivalent to:
+The home page shows adapter bubbles/cards:
 
-- list available profiles
-- list recent traces for selected profile
-- get a selected trace with normalized events
+- Hermes: active, loaded from backend adapter availability.
+- OpenCode: static disabled coming soon.
+- Claude Code: static disabled coming soon.
+- Codex: static disabled coming soon.
 
-The frontend should not read SQLite directly.
+Coming-soon cards should be visibly disabled and must not pretend to be functional.
+
+### Hermes Profiles page
+
+Clicking Hermes opens a Hermes Profiles page.
+
+This page should prioritize profile cards. Each profile card shows the profile name only. Keep it simple.
+
+If the user has no named profiles but has a usable default Hermes setup, AIFlows must show that default setup as a profile option rather than presenting an empty state.
+
+### Recent Flows page
+
+After selecting a profile, show recent completed Flows for that profile.
+
+Flow cards show only:
+
+- prompt preview;
+- model;
+- timestamp.
+
+The page shows the latest 20 Flows initially and supports Load more. Search and filters are out of scope.
+
+### Flow definition
+
+For this PRD, one Flow is one completed Hermes user prompt through final assistant answer.
+
+A Flow is not:
+
+- an entire Hermes session;
+- a task spanning multiple user messages;
+- a fabricated reasoning chain;
+- live token-by-token execution.
+
+### Flow status
+
+This PRD shows completed Flows only.
+
+Error Steps can still appear inside a completed Flow Replay, but the recent Flow list does not need error badges or alternative Flow statuses now.
+
+### Flow Replay layout
+
+Desktop layout:
+
+```text
+Prompt/header
+┌───────────────────────────────┬────────────────────┐
+│ Visual graph                  │ Inspector          │
+│                               │ Timeline           │
+│                               │ Selected Step      │
+└───────────────────────────────┴────────────────────┘
+```
+
+Mobile layout uses tabs:
+
+```text
+Prompt/header
+[ Graph ] [ Timeline ] [ Details ]
+```
+
+Graph remains the primary visual object. Timeline and details support inspection.
+
+### Graph behavior
+
+The graph should be linear and chronological:
+
+```text
+Prompt → Tool Call → Tool Result → ... → Final Response
+```
+
+Graph nodes should be minimal: type/title only, not long previews. The inspector owns detail.
+
+Each Step type should have distinct styling. Known first Step types include:
+
+- user prompt;
+- tool call;
+- tool result;
+- assistant response;
+- error;
+- unknown/other fallback.
+
+Tool categories may get additional icon/color treatment when it is truthful and based on observable tool names.
+
+### Inspector behavior
+
+Desktop inspector shows timeline and selected Step detail together.
+
+Clicking a graph node selects the Step and updates the inspector immediately. Clicking a timeline item selects the same Step and updates graph selection. Switching Flow clears stale selection.
+
+Step detail should be human-readable only for now. Do not show raw debug blobs by default.
+
+### Friendly Step summaries
+
+Known tool activity should be summarized simply in friendly language.
+
+First friendly summary categories:
+
+1. file reading/searching;
+2. file writing/patching;
+3. terminal commands;
+4. browser actions;
+5. memory/skills.
+
+Examples:
+
+```text
+Read file
+Path: /root/projects/AIFlows/README.md
+Limit: 200 lines
+```
+
+```text
+Ran command
+Command: npm test
+Working directory: /root/projects/AIFlows
+```
+
+Keep summaries simple. No diffs. No raw blobs. Unknown tools can fall back to a generic readable summary.
+
+### Polling
+
+Polling remains acceptable. This PRD does not require WebSockets/SSE or live running Flow detection.
+
+### Mobile usability
+
+Mobile is a first-class constraint. The app does not need to be perfect for complex graph navigation on a phone, but the user must be able to:
+
+- open Mission Control;
+- choose Hermes;
+- choose a profile;
+- browse Flows;
+- open a Flow;
+- switch between Graph, Timeline, and Details tabs.
 
 ## Testing Decisions
 
-Testing should focus on external behavior and stable seams, not implementation details.
+Testing should focus on external behavior and stable seams.
 
-### Highest-value seam
+### Backend tests
 
-The most important seam is the Hermes storage parser / trace normalizer:
+Backend tests should cover the adapter seam and API contracts:
 
-```text
-Hermes SQLite rows → normalized RunTrace
+1. `GET /api/adapters` returns Hermes as a working adapter.
+2. Hermes profile discovery includes named profiles.
+3. Hermes profile discovery handles/defaults the default Hermes setup when usable.
+4. Hermes Flow listing returns completed Flows for a selected profile.
+5. Flow listing supports `limit` and `offset` for latest 20 + Load more.
+6. Flow detail returns normalized Steps in chronological order.
+7. Unknown profile and unknown Flow return clear JSON errors.
+8. Existing trace-reader behavior remains covered for user/tool/final-answer sequences.
+
+### Frontend tests
+
+Frontend tests should be added for the new route/navigation behavior:
+
+1. `/` renders Mission Control adapter cards.
+2. Clicking Hermes navigates to Hermes Profiles.
+3. Clicking a profile navigates to recent Flows for that profile.
+4. Clicking a Flow navigates to Flow Replay.
+5. Direct deep links render the correct route when mocked API data exists.
+6. Flow Replay selection synchronizes graph/timeline/detail where practical.
+7. Mobile/tab behavior is tested at least at component/state level if practical.
+
+### Verification commands
+
+Every implementation issue should end with:
+
+```bash
+npm run typecheck
+npm test
+npm run build
 ```
 
-This is the core product behavior. If this works, the UI can remain relatively simple.
-
-### Recommended tests
-
-1. Given a simple user→assistant message sequence, the parser returns one completed trace.
-2. Given a user→assistant(tool_calls)→tool→assistant(stop) sequence, the parser returns one trace with tool-call and tool-result events in order.
-3. Given a user message without a final assistant `finish_reason = "stop"`, the parser does not emit a completed trace for v0.
-4. Given sessions with different sources, traces include the correct source badge.
-5. Given multiple turns in one session, the parser emits multiple traces rather than one session-sized trace.
-6. Given messages with no tool calls, the frontend still renders a valid two-node graph.
-7. Given a selected trace, the React Flow node generation creates chronological nodes and edges.
-
-### Manual demo test
-
-1. Start AIFlows locally.
-2. Select a Hermes profile.
-3. Prompt that Hermes profile from Telegram or CLI.
-4. Wait for Hermes to finish.
-5. Verify a new trace appears automatically.
-6. Select the trace.
-7. Verify the graph contains real prompt/response data.
-8. If the turn used tools, verify tool call/result nodes appear.
+Manual verification should include opening the app, navigating through the routed Mission Control journey, and checking a real or mocked Hermes Flow Replay.
 
 ## Out of Scope
 
-v0 explicitly does not include:
+This PRD explicitly does not include:
 
-- running Hermes from AIFlows
-- prompting agents from the AIFlows UI
-- connecting arbitrary remote Hermes installations
-- connecting ChatGPT web, Claude web, OpenAI, OpenRouter, OpenCode, or Claude Code
-- watching multiple Hermes profiles at once
-- user accounts or authentication
-- deployed SaaS hosting
-- remote connector installation
-- WebSocket/SSE streaming
-- token-by-token streaming
-- showing private chain-of-thought
-- inventing/faking reasoning or planning nodes
-- editable workflow graphs
-- workflow builder functionality
-- multi-agent orchestration UI
-- manual log upload/import workflow
-- modifying Hermes internals
+- self-hosted password protection;
+- full user accounts;
+- SaaS signup/login;
+- remote connector installation;
+- hosted AIFlows ingestion API;
+- live running Flows;
+- WebSocket/SSE streaming;
+- token-by-token streaming;
+- showing private chain-of-thought;
+- controlling or prompting Hermes from AIFlows;
+- running agents from AIFlows;
+- editable workflow graphs;
+- graph branching/grouping beyond chronological order;
+- search/filter for Flows;
+- settings/configuration page;
+- raw-data inspector;
+- diffs for file patches;
+- error badges in the recent Flow list;
+- OpenCode/Claude Code/Codex adapters;
+- full internal rename of all trace-related code unless low-risk.
+
+## Future Roadmap Notes
+
+Later self-hosted access milestone:
+
+- optional instance password when configured;
+- password gate before the app;
+- UI and API protected;
+- session remembered for about 7 days;
+- logout button.
+
+Later SaaS milestone:
+
+- hosted AIFlows app;
+- user accounts;
+- local connector running near Hermes;
+- connector pairing;
+- secure Flow ingestion;
+- source health and data retention controls.
+
+Later observability features:
+
+- live/running Flows;
+- active source status;
+- richer timing metrics;
+- search/filter;
+- raw-data advanced mode;
+- additional adapters.
 
 ## Success Criteria
 
-AIFlows v0 is successful when:
+This PRD succeeds when:
 
-1. It runs locally in developer mode.
-2. It can discover or use one selected Hermes profile.
-3. It reads real Hermes `state.db` data.
-4. It detects completed user→assistant turns.
-5. It shows recent traces in the UI.
-6. It renders the selected trace as a React Flow graph.
-7. It includes tool-call/tool-result nodes when the data exists.
-8. It falls back gracefully to user prompt → assistant response when no tool data exists.
-9. It automatically shows new traces after Hermes finishes answering.
-10. It avoids fake chain-of-thought or invented workflow steps.
-
-## Implementation Phases
-
-### Phase 1 — Storage tracer bullet
-
-Goal: prove the app can read Hermes profile storage and output real trace JSON.
-
-Tracer bullets:
-
-1. Read one selected profile's `state.db`.
-2. List recent sessions with source badges.
-3. Find recent completed user→assistant turns.
-4. Normalize the latest completed turn into `RunTrace` JSON.
-5. Include tool-call/tool-result events if present.
-
-Exit criteria:
-
-- A local script or backend endpoint prints valid trace JSON from real Hermes data.
-
-### Phase 2 — Backend API
-
-Goal: expose the trace data through a simple Node/Express API.
-
-Tracer bullets:
-
-1. Create an Express server.
-2. Add profile listing or configured-profile selection.
-3. Add endpoint for recent traces.
-4. Add endpoint for one trace's full event list.
-5. Add basic error handling for missing profile or missing database.
-
-Exit criteria:
-
-- Browser or curl can retrieve recent traces as JSON.
-
-### Phase 3 — React dashboard skeleton
-
-Goal: create the basic dashboard layout.
-
-Tracer bullets:
-
-1. Create Vite React TypeScript frontend.
-2. Add profile selector/status header.
-3. Add recent traces sidebar.
-4. Add selected trace state.
-5. Poll backend every ~2 seconds.
-
-Exit criteria:
-
-- New completed traces appear in the sidebar without manual reload.
-
-### Phase 4 — React Flow visualization
-
-Goal: render selected traces as graphs.
-
-Tracer bullets:
-
-1. Convert trace events to React Flow nodes and edges.
-2. Render user prompt and assistant response nodes.
-3. Render tool-call and tool-result nodes when available.
-4. Add source/status/time metadata.
-5. Add selected node detail panel.
-
-Exit criteria:
-
-- Selecting a trace renders a truthful React Flow graph from real Hermes data.
-
-### Phase 5 — Demo polish
-
-Goal: make the local developer demo understandable and presentable.
-
-Tracer bullets:
-
-1. Improve empty/loading/error states.
-2. Add readable node styling.
-3. Add prompt/answer previews.
-4. Add setup instructions to README.
-5. Add a manual demo checklist.
-
-Exit criteria:
-
-- Krzysztof can run the app locally, prompt Hermes, and show a new trace graph appearing after Hermes answers.
-
-## Further Notes
-
-The strongest positioning for v0 is observability, not orchestration.
-
-Recommended language:
-
-> AIFlows visualizes observable Hermes execution traces.
-
-Avoid saying:
-
-> AIFlows shows the agent's thought process.
-
-That wording is misleading because private chain-of-thought is not exposed and should not be required for the product to be valuable.
-
-Long-term possibilities after v0:
-
-- running-state traces while Hermes is still answering
-- WebSocket/SSE live updates
-- multiple profile watching
-- remote connector for another user's Hermes VPS
-- richer multi-agent/delegation visualization
-- OpenCode/Claude Code adapters
-- workflow graph mode for actual multi-agent orchestration
-- import/export of traces
-- sharing traces with reviewers
+1. AIFlows opens to a Mission Control home rather than a trace dashboard.
+2. Hermes appears as the active adapter and future adapters appear as disabled coming-soon cards.
+3. Clicking Hermes opens a Hermes Profiles page.
+4. Clicking a profile opens recent completed Flows for that profile.
+5. Recent Flows show prompt preview, model, and timestamp.
+6. Recent Flows support latest 20 plus Load more.
+7. Clicking a Flow opens a routed Flow Replay page.
+8. Flow Replay shows a prompt-first header, clean linear graph, and right inspector on desktop.
+9. Flow Replay uses Graph/Timeline/Details tabs on mobile.
+10. Known tool activity is summarized in human-readable language.
+11. Routes and deep links work.
+12. Backend API is adapter-shaped with Hermes as the first adapter.
+13. Backend and frontend tests cover the new seams.
+14. The product feels like the first version of Mission Control, not just a trace viewer.
