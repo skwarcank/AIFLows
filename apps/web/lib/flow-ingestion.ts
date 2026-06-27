@@ -1,4 +1,4 @@
-import type { FlowIngestionRequest, ShallowFlowPayload } from '@aiflows/flow-core';
+import type { FlowIngestionRequest, ShallowFlowPayload } from '@/lib/flow-ingestion-schema';
 
 export async function ingestFlows(supabase: any, context: { workspaceId: string; integrationId: string }, payload: FlowIngestionRequest): Promise<{ accepted: number }> {
   let accepted = 0;

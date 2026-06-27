@@ -11,7 +11,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@aiflows/flow-core": "*",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "@xyflow/react": "^12.11.1",

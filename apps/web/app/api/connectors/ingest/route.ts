@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateFlowPayload } from '@aiflows/flow-core';
 
 import { authenticateConnector, ConnectorAuthError } from '@/lib/connector-auth';
 import { ingestFlows } from '@/lib/flow-ingestion';
+import { validateFlowPayload } from '@/lib/flow-ingestion-schema';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
