@@ -8,6 +8,7 @@ import MissionControlView from '@/components/mission-control-view';
 import type { IntegrationRecord, WorkspaceRecord } from '@/lib/app-state';
 import { formatUtcDateTime } from '@/lib/date-format';
 import type { MissionControlData } from '@/lib/mission-control';
+import { chooseInitialProfileId, getFlowsForProfile } from '@/lib/profile-selection';
 
 interface PairingPayload {
   command: string;
@@ -29,14 +30,38 @@ export default function HermesPairingCard({ email, workspace, integration: initi
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [selectedFlowId, setSelectedFlowId] = useState<string | null>(missionControl?.flows[0]?.id ?? null);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(() => chooseInitialProfileId(missionControl?.profiles ?? []));
+  const selectedProfileFlows = useMemo(() => getFlowsForProfile(missionControl?.flows ?? [], selectedProfileId), [missionControl?.flows, selectedProfileId]);
+  const [selectedFlowId, setSelectedFlowId] = useState<string | null>(() => selectedProfileFlows[0]?.id ?? null);
 
   const isReady = Boolean(integration && integration.status !== 'pending' && integration.status !== 'revoked');
-  const selectedFlow = missionControl?.flows.find((flow) => flow.id === selectedFlowId) ?? missionControl?.flows[0] ?? null;
+  const selectedFlow = selectedProfileFlows.find((flow) => flow.id === selectedFlowId) ?? selectedProfileFlows[0] ?? null;
+  const selectedProfileName = missionControl?.profiles.find((profile) => profile.id === selectedProfileId)?.name ?? null;
 
   useEffect(() => {
     setIntegration(initialIntegration);
   }, [initialIntegration]);
+
+  useEffect(() => {
+    const profiles = missionControl?.profiles ?? [];
+    if (profiles.length === 0) {
+      setSelectedProfileId(null);
+      setSelectedFlowId(null);
+      return;
+    }
+
+    if (!selectedProfileId || !profiles.some((profile) => profile.id === selectedProfileId)) {
+      const nextProfileId = chooseInitialProfileId(profiles);
+      setSelectedProfileId(nextProfileId);
+      setSelectedFlowId(getFlowsForProfile(missionControl?.flows ?? [], nextProfileId)[0]?.id ?? null);
+    }
+  }, [missionControl?.profiles, missionControl?.flows, selectedProfileId]);
+
+  useEffect(() => {
+    if (!selectedProfileId) return;
+    if (selectedProfileFlows.some((flow) => flow.id === selectedFlowId)) return;
+    setSelectedFlowId(selectedProfileFlows[0]?.id ?? null);
+  }, [selectedFlowId, selectedProfileFlows, selectedProfileId]);
 
   useEffect(() => {
     if (!integration?.id) return;
@@ -109,15 +134,24 @@ export default function HermesPairingCard({ email, workspace, integration: initi
     }
   }
 
+  function handleSelectProfile(profileId: string) {
+    setSelectedProfileId(profileId);
+    setSelectedFlowId(getFlowsForProfile(missionControl?.flows ?? [], profileId)[0]?.id ?? null);
+  }
+
   if (isReady) {
     return (
       <MissionControlView
         email={email}
         workspace={workspace}
         integration={integration}
-        data={missionControl}
+        profiles={missionControl?.profiles ?? []}
+        flows={selectedProfileFlows}
         selectedFlow={selectedFlow}
         selectedFlowId={selectedFlowId}
+        selectedProfileId={selectedProfileId}
+        selectedProfileName={selectedProfileName}
+        onSelectProfile={handleSelectProfile}
         onSelectFlow={setSelectedFlowId}
         onDelete={handleDeleteIntegration}
         busy={busy}
