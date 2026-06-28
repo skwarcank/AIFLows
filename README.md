@@ -1,115 +1,78 @@
-# AIFlows — Mission Control for Hermes Flows
+# AIFlows — Hosted Mission Control for AI Agent Flows
 
-AIFlows is a small **Mission Control** UI for watching completed agent runs. **Hermes** is the first adapter. A **Flow** is the observable replay of one completed agent run, and a **Step** is one visible action inside that replay: user prompt, tool call, tool result, or assistant response.
+AIFlows is a hosted **Mission Control** app for watching AI agents work.
 
-The app reads Hermes data locally and presents it as route-based views:
-
-- **Mission Control** — the home dashboard
-- **Adapter** — the integration layer that exposes a source of Flows
-- **Hermes Profile** — a usable Hermes `state.db`
-- **Flow** — the replay of one completed run
-- **Step** — one visible event inside a Flow
-
-## How it works
-
-```
-Hermes Agent (Telegram / CLI)
-        │
-        ▼ writes to local state.db
-Hermes Profile
-        │
-        ▼ read-only access
-AIFlows backend (Express + TypeScript)
-        │
-        ▼ JSON routes
-AIFlows frontend (Vite + React)
-```
-
-AIFlows never writes to Hermes storage. It only reads existing profile databases.
-
-## Quick start
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Build the frontend
-npm run build -w packages/frontend
-
-# 3. Start the backend (serves API + built frontend)
-HERMES_PROFILES_DIR=~/.hermes/profiles npm start
-
-# 4. Open the app
-open http://127.0.0.1:3417
-```
-
-## Development mode
-
-```bash
-# Terminal 1: backend
-npm run dev:backend
-
-# Terminal 2: frontend
-npm run dev:frontend
-```
-
-Then open `http://127.0.0.1:5173`.
-
-## Routes
-
-- `/` — Mission Control home
-- `/adapters/hermes` — Hermes profile selection
-- `/adapters/hermes/profiles/:profileId` — recent Flows for one profile
-- `/adapters/hermes/profiles/:profileId/flows/:flowId` — Flow replay
-
-## Configuration
-
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | `3417` | Backend HTTP port |
-| `HERMES_PROFILES_DIR` | `~/.hermes/profiles` | Hermes profiles directory |
-| `VITE_API_URL` | `http://127.0.0.1:3417` | Backend URL used by Vite during development |
-
-## Repository layout
+The current product direction is SaaS-first:
 
 ```text
-packages/
-├── backend/
-│   ├── src/
-│   │   ├── app.ts           API routes + SPA fallback
-│   │   ├── index.ts         server startup
-│   │   ├── profiles.ts      Hermes profile discovery
-│   │   ├── trace-reader.ts   SQLite → Flow normalisation
-│   │   └── types.ts         backend data models
-│   └── __tests__/
-└── frontend/
-    ├── src/
-    │   ├── App.tsx                 route shell
-    │   ├── api.ts                  fetch helpers
-    │   ├── components/             Mission Control pages + replay UI
-    │   └── style.css
-    └── __tests__/
+Hosted AIFlows web app
+        ↑ outbound HTTPS sync
+AIFlows Connector CLI
+        ↑ read-only local access
+Hermes state.db / profiles
 ```
 
-## Key decisions
+Hermes is the first supported Integration. A user logs into Hosted AIFlows, creates a Hermes Integration, runs a one-command Connector near their Hermes installation, and views synced completed Flows remotely.
 
-- **Read-only** — AIFlows never writes to Hermes storage.
-- **Adapter-first** — Hermes is the first adapter, but the UI is structured so more adapters can be added later.
-- **Flow language** — visible UI uses Flow/Step language instead of Trace language.
-- **Simple empty states** — the app prefers direct, low-noise empty/error messages.
-- **No chain-of-thought wording** — the UI and docs describe observable actions only.
+## Current status
 
-## Demo walkthrough
+The historical local Express/Vite prototype has been removed from the active repo. Git history remains the archive for that implementation.
 
-1. Start Hermes and make sure at least one profile has a usable `state.db`.
-2. Start AIFlows.
-3. Open Mission Control at `http://127.0.0.1:3417`.
-4. Click **Hermes**.
-5. Pick a Hermes profile.
-6. Open a Flow.
-7. Inspect the graph, timeline, and selected Step details.
+Current active code:
 
-## Verification
+```text
+apps/web              Next.js SaaS app
+packages/connector    Node/TypeScript Connector CLI
+packages/flow-core    Shared Flow/Step types and validation
+supabase/migrations   Supabase schema and RLS migrations
+```
+
+Current active docs:
+
+```text
+CONTEXT.md            Glossary and product vocabulary
+docs/PRD.md           Current SaaS PRD
+docs/setup.md         External Supabase/GitHub/Vercel setup checklist
+docs/architecture.md  System architecture and code map
+docs/dev-notes.md     Developer workflow
+docs/adr/             Architectural decisions
+docs/issues/          Tracer-bullet implementation issues
+AGENTS.md             Instructions for AI coding agents
+```
+
+## Product vocabulary
+
+| Term | Meaning |
+|---|---|
+| **Workspace** | Internal container for a user's Integrations and Flows. UX is single-user for now. |
+| **Integration** | User-facing connection to an agent system, initially Hermes. |
+| **Connector** | Local CLI that runs near Hermes, reads Hermes read-only, and pushes normalized Flows to Hosted AIFlows. |
+| **Flow** | One completed observable agent run. |
+| **Step** | One observable event inside a Flow. |
+| **Mission Control** | Hosted UI for connected Integrations and synced Flows. |
+
+## Development quick start
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the Next.js app:
+
+```bash
+npm run dev
+```
+
+Run the Connector during development:
+
+```bash
+npm run dev:connector -- connect --token <pairing-token> --api-base-url http://localhost:3000
+npm run dev:connector -- run --once
+```
+
+Build and verify everything:
 
 ```bash
 npm run typecheck
@@ -117,21 +80,41 @@ npm test
 npm run build
 ```
 
-## Empty states
+## Environment setup
 
-The app keeps empty states plain and readable.
+Start with examples:
 
-Examples:
+```text
+.env.example
+apps/web/.env.local.example
+packages/connector/.env.example
+supabase/.env.local.example
+```
 
-- **No Hermes profiles** — `No Hermes data yet` / `No Hermes profiles found`
-- **No Flows** — `No Flows yet. Send a prompt to Hermes, then refresh.`
-- **Unknown route** — `Route not found`
+Then follow:
 
-## Out of scope
+```text
+docs/setup.md
+```
 
-- Running or controlling Hermes from AIFlows
-- Authentication
-- WebSocket / SSE streaming
-- Remote Hermes connections
-- Editable workflows
-- Chain-of-thought visualisation
+Krzysztof handles Supabase, GitHub, and Vercel setup externally in the browser. Agents should update `docs/setup.md` with exact steps and ask Krzysztof to confirm external setup before relying on it.
+
+## Deployment model
+
+- Supabase provides Auth and Postgres.
+- Vercel Git integration handles deployment.
+- GitHub Actions run quality gates only.
+- Supabase migrations are manual first; CI should not auto-apply production migrations.
+
+## Privacy and safety boundaries
+
+- Connector reads Hermes storage read-only.
+- Connector sends normalized shallow Flow/Step payloads, not raw Hermes database rows.
+- Hosted AIFlows stores full user prompts and final assistant answers.
+- Tool Steps store shallow descriptions/metadata, not full raw tool outputs.
+- Retention target: latest 100 Flows per Integration.
+- UI/docs must not claim to show chain-of-thought.
+
+## Historical note
+
+AIFlows began as a local Express/Vite prototype that read Hermes `state.db` directly and visualized completed traces. That code and old local planning docs were removed after the SaaS direction became the active product. Use git history before the cleanup commit if you need implementation archaeology; do not resurrect the old local app unless Krzysztof explicitly asks.

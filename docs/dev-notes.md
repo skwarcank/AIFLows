@@ -1,100 +1,114 @@
-# AIFlows — Development Notes
+# AIFlows Development Notes
 
-## Project structure
+## Current active direction
 
+AIFlows is now SaaS-first. The active product is the hosted Next.js app plus the local Connector CLI.
+
+Do not treat deleted local Express/Vite packages as current product surface. They were historical prototype code and are available only through git history.
+
+## Repo layout
+
+```text
+apps/web/              Next.js Hosted AIFlows app
+packages/connector/    Node/TypeScript Connector CLI
+packages/flow-core/    Shared Flow/Step types and validators
+supabase/migrations/   Supabase schema and RLS migrations
+docs/                  PRD, setup guide, architecture, ADRs, issues
+CONTEXT.md             Glossary
+AGENTS.md              AI-agent instructions
 ```
-├── packages/
-│   ├── backend/      TypeScript + Express API server
-│   └── frontend/     Vite + React + React Flow dashboard
-├── scripts/          Original JavaScript tracer bullets (legacy)
-│   ├── trace-reader.js        Ported to packages/backend/src/trace-reader.ts
-│   ├── serve-latest-trace.js  Replaced by packages/backend/src/index.ts
-│   └── read-latest-trace.js   CLI utility (kept for reference)
-└── docs/
-    ├── PRD.md        Product requirements
-    ├── issues/       Implementation slices
-    └── dev-notes.md  This file
-```
 
-## Backend
-
-The TypeScript + Express backend at `packages/backend/` replaces the original
-raw-Node.js `serve-latest-trace.js`. Key differences:
-
-- TypeScript with `tsx` dev runner (no build step during development)
-- Profile discovery — scans `~/.hermes/profiles/` for subdirectories with `state.db`
-- Multi-trace support — returns all completed traces, not just the latest
-- Three endpoints: profiles list, traces list per profile, single trace detail
-- Configurable Hermes profiles directory via `HERMES_PROFILES_DIR` env var
-- Uses `better-sqlite3` for SQLite (synchronous reads)
-
-### Commands
+## Commands
 
 ```bash
-npm run dev -w packages/backend    # Dev with hot reload
-npm run build -w packages/backend  # TypeScript build
-npm run test -w packages/backend   # Run tests
-```
-
-## Frontend
-
-The Vite + React + TypeScript dashboard at `packages/frontend/` is the new UI
-that replaces the old static HTML tracer bullet.
-
-### Key components
-
-- **ProfileSelector** — dropdown populated from `GET /api/profiles`
-- **StatusIndicator** — shows watching/offline/idle state
-- **TraceSidebar** — scrollable list of trace cards with polling
-- **TraceCard** — source badge, prompt preview, relative timestamp
-- **MainContent** — routing between placeholder/graph/error views
-- **GraphView** — React Flow canvas rendering trace events as nodes/edges
-- **DetailPanel** — full event content viewer with monospace formatting
-
-### Commands
-
-```bash
-npm run dev -w packages/frontend    # Vite HMR dev server
-npm run build -w packages/frontend  # Production build
-```
-
-## Running everything
-
-### Production mode (single command)
-
-```bash
-npm run build -w packages/frontend
-HERMES_PROFILES_DIR=~/.hermes/profiles npm start
-# Open http://127.0.0.1:3417
-```
-
-### Development mode (two terminals)
-
-```bash
-# Terminal 1
-npm run dev:backend
-
-# Terminal 2
-npm run dev:frontend
-# Open http://127.0.0.1:5173
-```
-
-## Testing
-
-The most important seam is the Hermes storage parser / trace normalizer:
-
-```
-Hermes SQLite rows → normalized RunTrace
-```
-
-Tests live in `packages/backend/__tests__/`.
-
-```bash
+npm install
+npm run dev          # Next.js web app
+npm run dev:connector -- --help
+npm run typecheck
 npm test
+npm run build
 ```
 
-## Legacy tracer bullets
+Root scripts intentionally cover only active packages:
 
-The original JavaScript files in `scripts/` are kept for reference but are no
-longer the primary way to run the app. They use Node.js's experimental built-in
-SQLite module (`--experimental-sqlite` flag) and the built-in `http` module.
+- `packages/flow-core`
+- `apps/web`
+- `packages/connector`
+
+## External setup workflow
+
+Krzysztof configures Supabase, GitHub, and Vercel manually in the browser.
+
+When implementation needs external setup:
+
+1. Update `docs/setup.md` with exact steps.
+2. Tell Krzysztof what to do.
+3. Ask for confirmation before relying on the external resource.
+
+Do not assume Supabase/Vercel/GitHub is configured until confirmed.
+
+## Supabase
+
+- Auth: email/password primary, GitHub OAuth also supported.
+- Redirect URLs must include the deployed URL; production verification emails must not point to localhost.
+- RLS is required from the start.
+- Migrations are manual first.
+- GitHub Actions should validate migrations if practical, but not apply production migrations.
+
+## Connector
+
+Connector command shape:
+
+```bash
+npx aiflows-connector connect --token <pairing-token>
+```
+
+Development example:
+
+```bash
+npm run dev:connector -- connect --token <pairing-token> --api-base-url http://localhost:3000
+npm run dev:connector -- run --once
+```
+
+Connector state lives in:
+
+```text
+~/.aiflows/connector.json
+```
+
+The Connector reads Hermes read-only and pushes outbound HTTPS to Hosted AIFlows.
+
+## Testing and verification
+
+Use real command output before claiming success:
+
+```bash
+npm run typecheck
+npm test
+npm run build
+```
+
+Useful focused checks:
+
+```bash
+npm run test -w apps/web
+npm run test -w packages/connector
+npm run typecheck -w packages/flow-core
+```
+
+## Build artifacts and noise
+
+Ignore generated/dependency directories when inspecting:
+
+```text
+node_modules/
+dist/
+.next/
+coverage/
+*.tsbuildinfo
+supabase/.temp/
+```
+
+## Historical note
+
+The old local app was useful as a prototype, but its docs and scripts became misleading once Hosted AIFlows became the product. Durable concepts were moved into `CONTEXT.md`, `docs/PRD.md`, and `docs/architecture.md`; old implementation details live in git history.
