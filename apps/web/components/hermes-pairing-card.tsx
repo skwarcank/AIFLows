@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import HermesIntegrationOnboarding from '@/components/hermes-integration-onboarding';
 import MissionControlView from '@/components/mission-control-view';
 import type { IntegrationRecord, WorkspaceRecord } from '@/lib/app-state';
+import { formatUtcDateTime } from '@/lib/date-format';
 import type { MissionControlData } from '@/lib/mission-control';
 
 interface PairingPayload {
@@ -60,7 +61,7 @@ export default function HermesPairingCard({ email, workspace, integration: initi
 
   const expiryLabel = useMemo(() => {
     if (!pairing?.expiresAt) return null;
-    return new Date(pairing.expiresAt).toLocaleString();
+    return formatUtcDateTime(pairing.expiresAt);
   }, [pairing?.expiresAt]);
 
   async function handleCreateOrRotate() {

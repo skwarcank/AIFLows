@@ -1,3 +1,4 @@
+import { formatUtcDateTime } from '@/lib/date-format';
 import type { MissionFlow } from '@/lib/mission-control';
 
 interface Props {
@@ -14,7 +15,7 @@ export default function FlowList({ flows, selectedFlowId, onSelectFlow }: Props)
         {flows.map((flow) => (
           <button key={flow.id} className={`flow-list-item ${flow.id === selectedFlowId ? 'flow-list-item-active' : ''}`} type="button" onClick={() => onSelectFlow(flow.id)}>
             <strong>{flow.title}</strong>
-            <span>{flow.finishedAt ? new Date(flow.finishedAt).toLocaleString() : 'No finish time'} · {flow.steps.length} steps</span>
+            <span>{formatUtcDateTime(flow.finishedAt, 'No finish time')} · {flow.steps.length} steps</span>
           </button>
         ))}
       </div>
