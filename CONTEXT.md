@@ -22,8 +22,20 @@ The primary AIFlows experience for watching connected agent systems and their Fl
 ### Connector
 A small program run near a user's Hermes installation that reads local Hermes storage, normalizes observable activity into AIFlows Flows and Steps, and securely sends those normalized Flows to Hosted AIFlows.
 
+### Connector Setup Wizard
+The guided first-run Connector experience that helps a user pair AIFlows, detect Hermes, choose profiles, choose history sync behavior, and start syncing without needing to understand Hermes internals.
+
+### Connector Control Panel
+The post-setup CLI surface for inspecting and changing Connector configuration, health, profile selection, sync status, and troubleshooting commands after the initial setup wizard has completed.
+
 ### Integration
 A user-facing connection between Hosted AIFlows and an agent system such as Hermes. An Integration may be powered by a Connector, but the UI should present the relationship as an Integration rather than exposing connector mechanics first.
+
+### Integration Profile
+A synced profile/account/workspace inside an Integration. For Hermes, this maps to a Hermes profile such as `default` or `asterion`. Mission Control should let users switch between Integration Profiles so each profile has a distinct Flow list instead of flattening all Flows together.
+
+### Detected Profile
+A Hermes profile currently found by the Connector on the local machine/VPS. Detected Profiles may be selected or not selected for sync; the Connector Control Panel should show both states so users can add or remove synced profiles intentionally.
 
 ### Workspace
 A container for a user's Integrations and Flows in Hosted AIFlows. The initial SaaS direction can present a single-user account, but the data model should create a default Workspace so teams can be added later.

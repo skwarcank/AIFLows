@@ -107,10 +107,16 @@ First UX can assume one Hermes Integration per user, but the database should sup
 
 ### Connector pairing
 
-Web onboarding creates a pending Hermes Integration and short-lived one-time pairing token. The UI shows:
+Web onboarding creates a pending Hermes Integration and short-lived one-time pairing token. The UI shows a curl installer command that installs the Connector and launches guided setup:
 
 ```bash
-npx aiflows-connector connect --token <pairing-token>
+curl -fsSL <app-url>/api/connectors/install.sh | bash -s -- --token <pairing-token>
+```
+
+Manual/local setup can run:
+
+```bash
+aiflows-connector setup --token <pairing-token>
 ```
 
 The Connector exchanges the pairing token for a long-lived connector token, stored locally under `~/.aiflows/connector.json`. Connector tokens are stored hashed in the database and can be revoked by deleting the Integration.
@@ -121,11 +127,15 @@ The first Connector is a Node/TypeScript CLI run in the foreground. Service/back
 
 The Connector:
 
+- runs a guided `setup --token` wizard for first use;
+- keeps lower-level `connect --token` for manual/debug pairing;
 - auto-detects Hermes paths;
 - supports `--hermes-home` override;
 - asks which Hermes profiles to sync;
 - asks whether to sync recent history;
 - defaults recent history count to 20 when accepted;
+- provides `status`, `profiles`, `config`, `doctor`, `help`, and `tldr` control-panel commands;
+- lets selected profiles be added/removed locally without deleting Hermes profiles or hosted Flows;
 - polls Hermes every 5 seconds;
 - uploads completed Flows only;
 - keeps local cursor/retry state;

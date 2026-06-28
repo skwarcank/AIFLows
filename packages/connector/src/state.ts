@@ -17,6 +17,12 @@ export interface FailedUpload {
   updatedAt: string;
 }
 
+export interface PendingRecentSync {
+  profileId: string;
+  count: number;
+  queuedAt: string;
+}
+
 export interface ConnectorState {
   apiBaseUrl: string;
   connectorToken: string;
@@ -28,6 +34,7 @@ export interface ConnectorState {
   hermesHome?: string;
   selectedProfiles?: SelectedHermesProfile[];
   syncRecentHistory?: boolean;
+  pendingRecentSyncs?: PendingRecentSync[];
   syncedFlowIds?: string[];
   failedUploads?: FailedUpload[];
   lastHeartbeatAt?: string;

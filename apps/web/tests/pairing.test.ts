@@ -50,6 +50,14 @@ describe('pairing helpers', () => {
     expect(script).toContain('exec node "$HOME/.aiflows/connector-src/packages/connector/dist/cli.js" "$@"');
   });
 
+  it('launches guided setup and asks before editing PATH', () => {
+    const script = buildConnectorInstallScript('https://app.example.com');
+
+    expect(script).toContain('"$BIN_PATH" setup --api-base-url "$API_BASE_URL" --token "$TOKEN" < /dev/tty');
+    expect(script).toContain('Add AIFlows to PATH in $SHELL_RC now? [y/N]');
+    expect(script).toContain('Manual setup:');
+  });
+
   it('keeps the token ttl pragmatic and short lived', () => {
     expect(getPairingTokenTtlMinutes()).toBe(15);
   });

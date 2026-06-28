@@ -60,12 +60,14 @@ Node/TypeScript CLI run near Hermes.
 
 Responsibilities:
 
-- Pair using `aiflows-connector connect --token <token>`.
+- Pair using guided `aiflows-connector setup --token <token>` or lower-level `aiflows-connector connect --token <token>`.
 - Store local state under `~/.aiflows/connector.json`.
 - Auto-detect Hermes home and profiles.
 - Allow `--hermes-home` override.
+- Show status/config/doctor diagnostics after setup.
+- List detected profiles and locally add/remove selected profiles without deleting Hermes or hosted data.
 - Ask which profiles to sync.
-- Ask whether to sync recent history.
+- Ask whether to sync recent history and support queued recent history per profile.
 - Poll every 5 seconds.
 - Upload completed shallow Flows.
 - Send heartbeat.

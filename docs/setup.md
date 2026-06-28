@@ -173,31 +173,47 @@ curl -fsSL <app-url>/api/connectors/install.sh | bash -s -- --token <token>
 
 The install script downloads the connector from GitHub, builds it locally, and pairs it with Hosted AIFlows.
 
-After pairing, run the connector beside Hermes:
+The installer launches the guided setup wizard:
 
 ```bash
-~/.aiflows/bin/aiflows-connector run
+aiflows-connector setup --token <token>
 ```
 
-If you added `~/.aiflows/bin` to `PATH`, this shorter form also works:
+The wizard pairs with Hosted AIFlows, detects Hermes read-only, lets you choose profiles, asks whether to queue recent history, and offers to start watching immediately.
+
+After setup, run the connector beside Hermes:
 
 ```bash
 aiflows-connector run
 ```
 
-Useful options:
+If `~/.aiflows/bin` is not on `PATH`, the installer asks before editing your shell config and defaults to No. Until PATH is configured, use:
 
 ```bash
+~/.aiflows/bin/aiflows-connector run
+```
+
+Useful commands:
+
+```bash
+aiflows-connector tldr
+aiflows-connector help
+aiflows-connector status
+aiflows-connector doctor
+aiflows-connector profiles
+aiflows-connector profiles add <profile> --recent 20
+aiflows-connector profiles remove <profile>
+aiflows-connector config
 aiflows-connector detect --hermes-home /path/to/.hermes
 aiflows-connector run --hermes-home /path/to/.hermes --once
-aiflows-connector run --yes
 ```
 
 The connector:
 
 - discovers Hermes profiles read-only;
-- lets you choose profiles;
-- asks whether to sync recent history;
+- lets you choose which detected profiles to sync;
+- can queue recent completed history or watch only future Flows;
+- shows local/server health through `status` and `doctor`;
 - sends heartbeat status;
 - uploads shallow completed Flow payloads every 5 seconds;
 - exits clearly if the Integration is deleted or credentials are revoked.
