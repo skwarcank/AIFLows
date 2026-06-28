@@ -1,3 +1,7 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import type { Database, SupabaseRow } from '@/lib/database.types';
+
 export interface MissionProfile {
   id: string;
   externalId: string;
@@ -37,7 +41,16 @@ export interface MissionControlData {
   flows: MissionFlow[];
 }
 
-export async function loadMissionControlData(supabase: any, integrationId: string): Promise<MissionControlData> {
+type MissionControlSupabaseClient = Pick<SupabaseClient<Database>, 'from'>;
+type IntegrationProfileRow = Pick<SupabaseRow<'integration_profiles'>, 'id' | 'external_id' | 'name' | 'profile_type'>;
+type FlowRow = Pick<SupabaseRow<'flows'>, 'id' | 'external_id' | 'integration_profile_id' | 'title' | 'prompt' | 'final_answer' | 'status' | 'started_at' | 'finished_at' | 'source' | 'model'>;
+type StepRow = Pick<SupabaseRow<'steps'>, 'id' | 'flow_id' | 'external_id' | 'step_index' | 'kind' | 'title' | 'description' | 'tool_name' | 'tool_metadata' | 'occurred_at'>;
+
+function metadataRecord(value: StepRow['tool_metadata']): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+export async function loadMissionControlData(supabase: MissionControlSupabaseClient, integrationId: string): Promise<MissionControlData> {
   const { data: profiles, error: profileError } = await supabase
     .from('integration_profiles')
     .select('id, external_id, name, profile_type')
@@ -54,8 +67,9 @@ export async function loadMissionControlData(supabase: any, integrationId: strin
     .limit(100);
   if (flowError) throw flowError;
 
-  const flowIds = (flows ?? []).map((flow: any) => flow.id);
-  let steps: any[] = [];
+  const typedFlows = (flows ?? []) as FlowRow[];
+  const flowIds = typedFlows.map((flow) => flow.id);
+  let steps: StepRow[] = [];
   if (flowIds.length > 0) {
     const { data, error } = await supabase
       .from('steps')
@@ -63,7 +77,7 @@ export async function loadMissionControlData(supabase: any, integrationId: strin
       .in('flow_id', flowIds)
       .order('step_index');
     if (error) throw error;
-    steps = data ?? [];
+    steps = (data ?? []) as StepRow[];
   }
 
   const stepsByFlow = new Map<string, MissionFlowStep[]>();
@@ -77,20 +91,20 @@ export async function loadMissionControlData(supabase: any, integrationId: strin
       title: step.title,
       description: step.description,
       toolName: step.tool_name,
-      metadata: step.tool_metadata ?? {},
+      metadata: metadataRecord(step.tool_metadata),
       occurredAt: step.occurred_at,
     });
     stepsByFlow.set(step.flow_id, list);
   }
 
   return {
-    profiles: (profiles ?? []).map((profile: any) => ({
+    profiles: ((profiles ?? []) as IntegrationProfileRow[]).map((profile) => ({
       id: profile.id,
       externalId: profile.external_id,
       name: profile.name,
       profileType: profile.profile_type,
     })),
-    flows: (flows ?? []).map((flow: any) => ({
+    flows: typedFlows.map((flow) => ({
       id: flow.id,
       externalId: flow.external_id,
       profileId: flow.integration_profile_id,

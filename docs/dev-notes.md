@@ -22,7 +22,7 @@ AGENTS.md              AI-agent instructions
 
 ```bash
 npm install
-npm run dev          # Next.js web app
+npm run dev:web      # Next.js web app
 npm run dev:connector -- --help
 npm run typecheck
 npm test
@@ -60,7 +60,7 @@ Do not assume Supabase/Vercel/GitHub is configured until confirmed.
 Connector command shape:
 
 ```bash
-npx aiflows-connector connect --token <pairing-token>
+curl -fsSL <app-url>/api/connectors/install.sh | bash -s -- --token <pairing-token>
 ```
 
 Development example:
@@ -77,6 +77,10 @@ Connector state lives in:
 ```
 
 The Connector reads Hermes read-only and pushes outbound HTTPS to Hosted AIFlows.
+
+## Dependency audit note
+
+`apps/web` uses Next.js 15.5.x rather than jumping to Next 16. npm still reports a production audit advisory for Next's bundled `postcss@8.4.31`; Next 15 and Next 16 both currently declare that internal PostCSS version, and npm does not cleanly replace it through package overrides. Do not run `npm audit fix --force` blindly: it may propose misleading or breaking framework changes. Re-check Next release notes/advisories before the next dependency pass.
 
 ## Testing and verification
 

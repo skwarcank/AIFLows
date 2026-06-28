@@ -8,7 +8,7 @@ import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createReadOnlySupabaseServerClient } from '@/lib/supabase/server';
 
 export default async function AppPage() {
-  const supabase = createReadOnlySupabaseServerClient();
+  const supabase = await createReadOnlySupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

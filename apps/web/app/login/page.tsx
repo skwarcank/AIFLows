@@ -4,7 +4,7 @@ import LoginForm from '@/components/login-form';
 import { createReadOnlySupabaseServerClient } from '@/lib/supabase/server';
 
 export default async function LoginPage() {
-  const supabase = createReadOnlySupabaseServerClient();
+  const supabase = await createReadOnlySupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

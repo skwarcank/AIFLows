@@ -1,3 +1,6 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import type { Database, IntegrationStatus } from '@/lib/database.types';
 import { sha256Hex } from './pairing';
 
 export interface ConnectorAuthContext {
@@ -19,7 +22,15 @@ export function getBearerToken(header: string | null): string {
   return token;
 }
 
-export async function authenticateConnector(supabase: any, authorizationHeader: string | null): Promise<ConnectorAuthContext> {
+type ConnectorAuthSupabaseClient = Pick<SupabaseClient<Database>, 'from'>;
+type ConnectorTokenWithIntegration = {
+  workspace_id: string;
+  integration_id: string;
+  revoked_at: string | null;
+  integrations: { id: string; status: IntegrationStatus } | { id: string; status: IntegrationStatus }[] | null;
+};
+
+export async function authenticateConnector(supabase: ConnectorAuthSupabaseClient, authorizationHeader: string | null): Promise<ConnectorAuthContext> {
   const token = getBearerToken(authorizationHeader);
   const tokenHash = sha256Hex(token);
   const { data, error } = await supabase
@@ -30,11 +41,12 @@ export async function authenticateConnector(supabase: any, authorizationHeader: 
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) throw new ConnectorAuthError('Connector token is invalid or revoked.');
-  const integration = Array.isArray(data.integrations) ? data.integrations[0] : data.integrations;
+  const tokenRow = data as unknown as ConnectorTokenWithIntegration | null;
+  if (!tokenRow) throw new ConnectorAuthError('Connector token is invalid or revoked.');
+  const integration = Array.isArray(tokenRow.integrations) ? tokenRow.integrations[0] : tokenRow.integrations;
   if (!integration || integration.status === 'revoked') throw new ConnectorAuthError('Integration was deleted or revoked.', 404);
 
   await supabase.from('connector_tokens').update({ last_used_at: new Date().toISOString() }).eq('token_hash', tokenHash);
 
-  return { workspaceId: data.workspace_id, integrationId: data.integration_id, tokenHash };
+  return { workspaceId: tokenRow.workspace_id, integrationId: tokenRow.integration_id, tokenHash };
 }

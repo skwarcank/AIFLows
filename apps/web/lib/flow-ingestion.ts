@@ -1,6 +1,11 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import type { Database, Json } from '@/lib/database.types';
 import type { FlowIngestionRequest, ShallowFlowPayload } from '@/lib/flow-ingestion-schema';
 
-export async function ingestFlows(supabase: any, context: { workspaceId: string; integrationId: string }, payload: FlowIngestionRequest): Promise<{ accepted: number }> {
+type IngestionSupabaseClient = Pick<SupabaseClient<Database>, 'from'>;
+
+export async function ingestFlows(supabase: IngestionSupabaseClient, context: { workspaceId: string; integrationId: string }, payload: FlowIngestionRequest): Promise<{ accepted: number }> {
   let accepted = 0;
   for (const flow of payload.flows) {
     await ingestOneFlow(supabase, context, flow);
@@ -11,7 +16,7 @@ export async function ingestFlows(supabase: any, context: { workspaceId: string;
   return { accepted };
 }
 
-async function ingestOneFlow(supabase: any, context: { workspaceId: string; integrationId: string }, flow: ShallowFlowPayload) {
+async function ingestOneFlow(supabase: IngestionSupabaseClient, context: { workspaceId: string; integrationId: string }, flow: ShallowFlowPayload) {
   const { data: profile, error: profileError } = await supabase
     .from('integration_profiles')
     .upsert({
@@ -56,14 +61,14 @@ async function ingestOneFlow(supabase: any, context: { workspaceId: string; inte
       title: step.title,
       description: step.description ?? null,
       tool_name: step.toolName ?? null,
-      tool_metadata: step.metadata ?? {},
+      tool_metadata: (step.metadata ?? {}) as Json,
       occurred_at: step.occurredAt ?? null,
     })));
     if (stepsError) throw stepsError;
   }
 }
 
-export async function enforceLatest100Retention(supabase: any, integrationId: string) {
+export async function enforceLatest100Retention(supabase: IngestionSupabaseClient, integrationId: string) {
   const { data, error } = await supabase
     .from('flows')
     .select('id')

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { createReadOnlySupabaseServerClient } from '@/lib/supabase/server';
 
 export default async function RootPage() {
-  const supabase = createReadOnlySupabaseServerClient();
+  const supabase = await createReadOnlySupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
