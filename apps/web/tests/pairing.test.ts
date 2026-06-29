@@ -55,7 +55,7 @@ describe('pairing helpers', () => {
     const script = buildConnectorInstallScript('https://app.example.com');
 
     expect(script.indexOf('echo "  $BIN_PATH tldr"')).toBeLessThan(script.indexOf('"$BIN_PATH" setup --api-base-url "$API_BASE_URL" --token "$TOKEN" < /dev/tty'));
-    expect(script).toContain('Add AIFlows to PATH in $SHELL_RC now? [y/N]');
+    expect(script).toContain('read -r -p "Add AIFlows to PATH in $SHELL_RC now? [y/N] " ADD_PATH < /dev/tty');
     expect(script).toContain('No problem — use the full path commands above.');
     expect(script).toContain('Tip: if you start watching and later press Ctrl+C, restart with:');
     expect(script).toContain('Manual PATH setup if you want it later:');
