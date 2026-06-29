@@ -51,3 +51,6 @@ The policy that controls how many synced Flows Hosted AIFlows keeps for an Integ
 
 ### Step Content Policy
 The rule for what Step content Hosted AIFlows stores. The initial SaaS direction stores shallow Step descriptions and metadata rather than full raw tool outputs or generated summaries; configurable retention/detail levels may be considered later.
+
+### TraceStep
+A presentation-level Flow Replay story node derived deterministically from one or more stored shallow Steps. TraceSteps keep source Step references so Story graph nodes remain auditable without exposing raw Hermes database rows, full tool outputs, or private chain-of-thought.
