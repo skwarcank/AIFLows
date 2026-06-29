@@ -201,7 +201,7 @@ The installer also creates a short alias at `~/.aiflows/bin/aiflows`, so this wo
 aiflows tldr
 ```
 
-Useful commands:
+Useful commands after `source ~/.bashrc` or a new terminal:
 
 ```bash
 aiflows-connector tldr
@@ -214,6 +214,13 @@ aiflows-connector profiles remove <profile>
 aiflows-connector config
 aiflows-connector detect --hermes-home /path/to/.hermes
 aiflows-connector run --hermes-home /path/to/.hermes --once
+```
+
+Without PATH active yet, prefix commands with the full path:
+
+```bash
+~/.aiflows/bin/aiflows-connector status
+~/.aiflows/bin/aiflows-connector run
 ```
 
 The connector:

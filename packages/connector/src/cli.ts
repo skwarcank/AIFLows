@@ -140,7 +140,7 @@ async function runSetup(parsed: ParsedArgs, out: Output): Promise<number> {
   const startNow = parsed.yes ? true : await promptYesNo('Start watching Hermes now?');
   if (startNow) {
     console.log('');
-    console.log(`${out.bold('Watching now.')} Stop: ${out.warning('Ctrl+C')}  Restart: ${out.command('aiflows-connector run')} or ${out.command('~/.aiflows/bin/aiflows-connector run')}`);
+    console.log(`${out.bold('Watching now.')} Stop: ${out.warning('Ctrl+C')}  Restart: ${out.command('~/.aiflows/bin/aiflows-connector run')} or ${out.command('aiflows-connector run')} after PATH is active.`);
     console.log('');
     return await runConnector({ ...parsed, once: false, yes: true }, out);
   }
@@ -176,7 +176,7 @@ async function runConnector(parsed: ParsedArgs, out: Output): Promise<number> {
   console.log(`${out.success('✓ Watching')} ${state.selectedProfiles?.length ?? 0} profile(s). Hermes access is read-only.`);
   console.log(hasPendingRecentSyncs(state) ? 'Sync: queued recent history, then new Flows.' : 'Sync: new completed Flows.');
   if (!parsed.once) {
-    console.log(`${out.warning('Stop:')} Ctrl+C  ${out.command('Restart: aiflows-connector run')}  ${out.dim('Fallback: ~/.aiflows/bin/aiflows-connector run')}`);
+    console.log(`${out.warning('Stop:')} Ctrl+C  ${out.command('Restart: ~/.aiflows/bin/aiflows-connector run')}  ${out.dim('Short command works after: source ~/.bashrc')}`);
   }
 
   while (true) {
@@ -585,38 +585,42 @@ function printTldr(out: Output): number {
   console.log(`  ${out.command('aiflows-connector setup --token <token>')}`);
   console.log('');
   console.log('Start syncing:');
-  console.log(`  ${out.command('aiflows-connector run')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')}`);
+  console.log(`  ${out.command('aiflows-connector run')} after PATH is active`);
   console.log('');
   console.log('Check health:');
-  console.log(`  ${out.command('aiflows-connector status')}`);
-  console.log(`  ${out.command('aiflows-connector doctor')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector status')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector doctor')}`);
   console.log('');
   console.log('Manage profiles:');
-  console.log(`  ${out.command('aiflows-connector profiles')}`);
-  console.log(`  ${out.command('aiflows-connector profiles add <name>')}`);
-  console.log(`  ${out.command('aiflows-connector profiles add <name> --recent 20')}`);
-  console.log(`  ${out.command('aiflows-connector profiles remove <name>')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector profiles')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector profiles add <name>')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector profiles add <name> --recent 20')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector profiles remove <name>')}`);
   return 0;
 }
 
 function printStartLater(out: Output) {
   console.log('');
   console.log('Start later with:');
-  console.log(`  ${out.command('aiflows-connector run')}`);
-  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')} if the command is not on PATH yet.`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')}`);
+  console.log(`  ${out.command('aiflows-connector run')} after ${out.command('source ~/.bashrc')} or a new terminal.`);
   console.log('');
   console.log('Useful commands:');
-  console.log(`  ${out.command('aiflows-connector status')}`);
-  console.log(`  ${out.command('aiflows-connector profiles')}`);
-  console.log(`  ${out.command('aiflows-connector tldr')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector status')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector profiles')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector tldr')}`);
 }
 
 function printInstalledCommandTips(out: Output) {
-  console.log(out.underline('Commands'));
+  console.log(out.underline('Reliable commands'));
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector tldr')}  help`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')}   sync`);
+  console.log(out.underline('Short commands after PATH is active'));
   console.log(`  ${out.command('aiflows-connector tldr')}  help`);
   console.log(`  ${out.command('aiflows-connector run')}   sync`);
   console.log(`  ${out.command('aiflows tldr')}            short alias`);
-  console.log(`${out.warning('Command not found?')} Use ${out.command('~/.aiflows/bin/aiflows-connector tldr')} or ${out.command('~/.aiflows/bin/aiflows-connector run')}`);
+  console.log(`${out.warning('Just installed?')} Run ${out.command('source ~/.bashrc')} or open a new terminal before using short commands.`);
   console.log('');
 }
 
