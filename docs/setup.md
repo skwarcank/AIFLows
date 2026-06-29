@@ -187,7 +187,7 @@ After setup, run the connector beside Hermes:
 aiflows-connector run
 ```
 
-If `~/.aiflows/bin` is not on `PATH`, the installer now prints full-path commands before guided setup starts, then asks before editing your shell config and defaults to No. The always-working commands are:
+If `~/.aiflows/bin` is not on `PATH`, the installer prints a short color-coded PATH warning, shows full-path commands that always work, then asks before editing your shell config and defaults to No. The always-working commands are:
 
 ```bash
 ~/.aiflows/bin/aiflows-connector tldr

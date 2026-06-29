@@ -35,7 +35,7 @@ interface ParsedArgs {
 
 const POLL_INTERVAL_MS = 5000;
 
-type StyleName = 'bold' | 'dim' | 'success' | 'warning' | 'error' | 'command';
+type StyleName = 'bold' | 'underline' | 'dim' | 'success' | 'warning' | 'error' | 'command';
 
 type Output = ReturnType<typeof createOutput>;
 
@@ -140,10 +140,7 @@ async function runSetup(parsed: ParsedArgs, out: Output): Promise<number> {
   const startNow = parsed.yes ? true : await promptYesNo('Start watching Hermes now?');
   if (startNow) {
     console.log('');
-    console.log('Starting the foreground sync loop. Stop it with Ctrl+C.');
-    console.log('Start it again later with:');
-    console.log(`  ${out.command('aiflows-connector run')}`);
-    console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')} if the command is not on PATH yet.`);
+    console.log(`${out.bold('Watching now.')} Stop: ${out.warning('Ctrl+C')}  Restart: ${out.command('aiflows-connector run')} or ${out.command('~/.aiflows/bin/aiflows-connector run')}`);
     console.log('');
     return await runConnector({ ...parsed, once: false, yes: true }, out);
   }
@@ -176,11 +173,10 @@ async function runConnector(parsed: ParsedArgs, out: Output): Promise<number> {
   state = await ensureHermesSelection(state, parsed);
   await writeConnectorState(state);
   await heartbeatOrExit(state, 'connected');
-  console.log(`Watching ${state.selectedProfiles?.length ?? 0} Hermes profile(s). AIFlows reads Hermes data read-only.`);
-  console.log(hasPendingRecentSyncs(state) ? 'Syncing queued recent history, then watching for new Flows.' : 'Watching new completed Flows.');
+  console.log(`${out.success('✓ Watching')} ${state.selectedProfiles?.length ?? 0} profile(s). Hermes access is read-only.`);
+  console.log(hasPendingRecentSyncs(state) ? 'Sync: queued recent history, then new Flows.' : 'Sync: new completed Flows.');
   if (!parsed.once) {
-    console.log('Press Ctrl+C to stop. Restart later with: aiflows-connector run');
-    console.log('If that command is not found, use: ~/.aiflows/bin/aiflows-connector run');
+    console.log(`${out.warning('Stop:')} Ctrl+C  ${out.command('Restart: aiflows-connector run')}  ${out.dim('Fallback: ~/.aiflows/bin/aiflows-connector run')}`);
   }
 
   while (true) {
@@ -541,6 +537,7 @@ function createOutput(colorMode: ParsedArgs['colorMode']) {
   const enabled = colorMode === 'always' || (colorMode === 'auto' && (Boolean(process.env.FORCE_COLOR) || (process.stdout.isTTY && !process.env.NO_COLOR)));
   const codes: Record<StyleName, [number, number]> = {
     bold: [1, 22],
+    underline: [4, 24],
     dim: [2, 22],
     success: [32, 39],
     warning: [33, 39],
@@ -550,6 +547,7 @@ function createOutput(colorMode: ParsedArgs['colorMode']) {
   const style = (name: StyleName, value: string) => (enabled ? `\u001b[${codes[name][0]}m${value}\u001b[${codes[name][1]}m` : value);
   return {
     bold: (value: string) => style('bold', value),
+    underline: (value: string) => style('underline', value),
     dim: (value: string) => style('dim', value),
     success: (value: string) => style('success', value),
     warning: (value: string) => style('warning', value),
@@ -614,14 +612,11 @@ function printStartLater(out: Output) {
 }
 
 function printInstalledCommandTips(out: Output) {
-  console.log('Installed command names:');
-  console.log(`  ${out.command('aiflows-connector tldr')}  quick command cheat sheet`);
-  console.log(`  ${out.command('aiflows-connector help')}  full help`);
-  console.log(`  ${out.command('aiflows-connector run')}   start syncing`);
-  console.log(`  ${out.command('aiflows tldr')}            shorter alias, if installed`);
-  console.log('If your shell says command not found, use the full path:');
-  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector tldr')}`);
-  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')}`);
+  console.log(out.underline('Commands'));
+  console.log(`  ${out.command('aiflows-connector tldr')}  help`);
+  console.log(`  ${out.command('aiflows-connector run')}   sync`);
+  console.log(`  ${out.command('aiflows tldr')}            short alias`);
+  console.log(`${out.warning('Command not found?')} Use ${out.command('~/.aiflows/bin/aiflows-connector tldr')} or ${out.command('~/.aiflows/bin/aiflows-connector run')}`);
   console.log('');
 }
 
