@@ -135,9 +135,16 @@ async function runSetup(parsed: ParsedArgs, out: Output): Promise<number> {
   const statePath = await writeConnectorState(state);
   console.log(out.success('✓ Setup complete'));
   console.log(out.dim(`State saved to: ${statePath}`));
+  printInstalledCommandTips(out);
 
   const startNow = parsed.yes ? true : await promptYesNo('Start watching Hermes now?');
   if (startNow) {
+    console.log('');
+    console.log('Starting the foreground sync loop. Stop it with Ctrl+C.');
+    console.log('Start it again later with:');
+    console.log(`  ${out.command('aiflows-connector run')}`);
+    console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')} if the command is not on PATH yet.`);
+    console.log('');
     return await runConnector({ ...parsed, once: false, yes: true }, out);
   }
 
@@ -171,6 +178,10 @@ async function runConnector(parsed: ParsedArgs, out: Output): Promise<number> {
   await heartbeatOrExit(state, 'connected');
   console.log(`Watching ${state.selectedProfiles?.length ?? 0} Hermes profile(s). AIFlows reads Hermes data read-only.`);
   console.log(hasPendingRecentSyncs(state) ? 'Syncing queued recent history, then watching for new Flows.' : 'Watching new completed Flows.');
+  if (!parsed.once) {
+    console.log('Press Ctrl+C to stop. Restart later with: aiflows-connector run');
+    console.log('If that command is not found, use: ~/.aiflows/bin/aiflows-connector run');
+  }
 
   while (true) {
     state = (await readStateKindly()) ?? state;
@@ -550,6 +561,7 @@ function createOutput(colorMode: ParsedArgs['colorMode']) {
 function printHelp(out: Output): number {
   console.log(out.bold('AIFlows Connector'));
   console.log('');
+  printInstalledCommandTips(out);
   console.log('Usage:');
   console.log(`  ${out.command('aiflows-connector setup --token <pairing-token> [--api-base-url <url>] [--hermes-home <path>] [--yes]')}`);
   console.log(`  ${out.command('aiflows-connector connect --token <pairing-token> [--api-base-url <url>]')}`);
@@ -570,6 +582,7 @@ function printHelp(out: Output): number {
 function printTldr(out: Output): number {
   console.log(out.bold('AIFlows Connector — common commands'));
   console.log('');
+  printInstalledCommandTips(out);
   console.log('First setup:');
   console.log(`  ${out.command('aiflows-connector setup --token <token>')}`);
   console.log('');
@@ -592,11 +605,24 @@ function printStartLater(out: Output) {
   console.log('');
   console.log('Start later with:');
   console.log(`  ${out.command('aiflows-connector run')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')} if the command is not on PATH yet.`);
   console.log('');
   console.log('Useful commands:');
   console.log(`  ${out.command('aiflows-connector status')}`);
   console.log(`  ${out.command('aiflows-connector profiles')}`);
   console.log(`  ${out.command('aiflows-connector tldr')}`);
+}
+
+function printInstalledCommandTips(out: Output) {
+  console.log('Installed command names:');
+  console.log(`  ${out.command('aiflows-connector tldr')}  quick command cheat sheet`);
+  console.log(`  ${out.command('aiflows-connector help')}  full help`);
+  console.log(`  ${out.command('aiflows-connector run')}   start syncing`);
+  console.log(`  ${out.command('aiflows tldr')}            shorter alias, if installed`);
+  console.log('If your shell says command not found, use the full path:');
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector tldr')}`);
+  console.log(`  ${out.command('~/.aiflows/bin/aiflows-connector run')}`);
+  console.log('');
 }
 
 function printNotSetup(out: Output) {

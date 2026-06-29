@@ -43,19 +43,22 @@ describe('pairing helpers', () => {
     expect(shellQuote("can't")).toBe("'can'\\''t'");
   });
 
-  it('writes a connector wrapper that preserves runtime arguments', () => {
+  it('writes connector wrappers that preserve runtime arguments', () => {
     const script = buildConnectorInstallScript('https://app.example.com');
 
     expect(script).toContain("cat > \"$BIN_PATH\" <<'EOF'");
     expect(script).toContain('exec node "$HOME/.aiflows/connector-src/packages/connector/dist/cli.js" "$@"');
+    expect(script).toContain('ln -sf "$BIN_PATH" "$SHORT_BIN_PATH"');
   });
 
-  it('launches guided setup and asks before editing PATH', () => {
+  it('prints full-path commands before guided setup and asks before editing PATH', () => {
     const script = buildConnectorInstallScript('https://app.example.com');
 
-    expect(script).toContain('"$BIN_PATH" setup --api-base-url "$API_BASE_URL" --token "$TOKEN" < /dev/tty');
+    expect(script.indexOf('echo "  $BIN_PATH tldr"')).toBeLessThan(script.indexOf('"$BIN_PATH" setup --api-base-url "$API_BASE_URL" --token "$TOKEN" < /dev/tty'));
     expect(script).toContain('Add AIFlows to PATH in $SHELL_RC now? [y/N]');
-    expect(script).toContain('Manual setup:');
+    expect(script).toContain('No problem — use the full path commands above.');
+    expect(script).toContain('Tip: if you start watching and later press Ctrl+C, restart with:');
+    expect(script).toContain('Manual PATH setup if you want it later:');
   });
 
   it('keeps the token ttl pragmatic and short lived', () => {

@@ -187,10 +187,18 @@ After setup, run the connector beside Hermes:
 aiflows-connector run
 ```
 
-If `~/.aiflows/bin` is not on `PATH`, the installer asks before editing your shell config and defaults to No. Until PATH is configured, use:
+If `~/.aiflows/bin` is not on `PATH`, the installer now prints full-path commands before guided setup starts, then asks before editing your shell config and defaults to No. The always-working commands are:
 
 ```bash
+~/.aiflows/bin/aiflows-connector tldr
+~/.aiflows/bin/aiflows-connector help
 ~/.aiflows/bin/aiflows-connector run
+```
+
+The installer also creates a short alias at `~/.aiflows/bin/aiflows`, so this works once `~/.aiflows/bin` is on `PATH`:
+
+```bash
+aiflows tldr
 ```
 
 Useful commands:
