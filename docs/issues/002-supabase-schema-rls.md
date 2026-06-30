@@ -45,7 +45,7 @@ Include constraints for stable external IDs/upserts. Consider uniqueness for Int
 - [ ] Policies prevent cross-workspace reads/writes.
 - [ ] Pairing/connector token storage supports hashed tokens.
 - [ ] Flow retention/latest-100 implementation is planned or scaffolded.
-- [ ] `docs/setup.md` explains how Krzysztof applies migrations manually.
+- [ ] `docs/setup.md` explains how migrations are applied manually.
 
 ## Verification
 
@@ -57,4 +57,4 @@ npm test
 npm run build
 ```
 
-If this issue requires external browser setup, update `docs/setup.md` and ask Krzysztof to confirm the step is complete before relying on it.
+If this issue requires external browser setup, update `docs/setup.md` and require confirmation the step is complete before relying on it.

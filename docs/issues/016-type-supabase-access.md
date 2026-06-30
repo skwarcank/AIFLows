@@ -38,7 +38,7 @@ Useful approach:
 3. Use typed Supabase clients where possible.
 4. Keep server-side service-role writes explicit and reviewable.
 
-If generated Supabase types require external/project setup, update `docs/setup.md` and ask Krzysztof to confirm before relying on that path. A local handwritten type file is acceptable for this issue if it keeps the repo self-contained.
+If generated Supabase types require external/project setup, update `docs/setup.md` and require confirmation before relying on that path. A local handwritten type file is acceptable for this issue if it keeps the repo self-contained.
 
 ## Acceptance criteria
 
@@ -62,4 +62,4 @@ npm run build
 
 ## External setup rule
 
-If this issue requires external Supabase CLI/project setup, update `docs/setup.md`, tell Krzysztof exactly what to do, and ask him to confirm before relying on that setup.
+If this issue requires external Supabase CLI/project setup, update `docs/setup.md`, document the required external steps, and require confirmation before relying on that setup.

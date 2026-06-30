@@ -15,7 +15,7 @@ packages/flow-core    Shared Flow/Step model
 supabase/migrations   Supabase schema/RLS
 ```
 
-The old local Express/Vite app was removed from active source. Do not resurrect it or recreate `packages/backend` / `packages/frontend` unless Krzysztof explicitly asks.
+The old local Express/Vite app was removed from active source. Do not resurrect it or recreate `packages/backend` / `packages/frontend` unless explicitly requested.
 
 ## Required reading order
 
@@ -40,13 +40,13 @@ Before implementing product changes, read:
 
 ## External setup rule
 
-Krzysztof handles Supabase, GitHub, and Vercel in the browser.
+Supabase, GitHub, and Vercel setup is performed externally in the browser.
 
 If a change requires external setup:
 
 1. Update `docs/setup.md` with exact steps.
-2. Tell Krzysztof what to do.
-3. Ask him to confirm completion before relying on that setup.
+2. Document the required external steps.
+3. Require confirmation before relying on that setup.
 
 Never fake provider setup. Never assume secrets or deployed URLs exist until confirmed.
 

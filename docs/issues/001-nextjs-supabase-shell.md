@@ -53,4 +53,4 @@ npm test
 npm run build
 ```
 
-If this issue requires external browser setup, update `docs/setup.md` and ask Krzysztof to confirm the step is complete before relying on it.
+If this issue requires external browser setup, update `docs/setup.md` and require confirmation the step is complete before relying on it.

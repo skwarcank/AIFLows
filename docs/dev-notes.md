@@ -37,12 +37,12 @@ Root scripts intentionally cover only active packages:
 
 ## External setup workflow
 
-Krzysztof configures Supabase, GitHub, and Vercel manually in the browser.
+Supabase, GitHub, and Vercel are configured manually in the browser.
 
 When implementation needs external setup:
 
 1. Update `docs/setup.md` with exact steps.
-2. Tell Krzysztof what to do.
+2. Document the required external steps.
 3. Ask for confirmation before relying on the external resource.
 
 Do not assume Supabase/Vercel/GitHub is configured until confirmed.

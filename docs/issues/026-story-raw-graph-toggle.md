@@ -58,7 +58,7 @@ The toggle is an escape hatch for reviewers/debugging. It should not make Raw vi
 - If fullscreen exists, include the toggle there too, or use the same graph header controls in normal and fullscreen views.
 - Consider preserving selected source/TraceStep context when toggling only if simple; otherwise clear selection safely.
 
-Amon process reminders:
+the implementation agent process reminders:
 
 - Read project docs/ADRs first.
 - Preserve AIFlows as Mission Control, not a raw debugging console.

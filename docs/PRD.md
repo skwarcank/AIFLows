@@ -58,8 +58,8 @@ This is not a debugging-console product. Hosted AIFlows should focus on watching
 28. As a developer, I want connector tokens stored hashed, so that a database leak does not reveal active Connector credentials.
 29. As a developer, I want ingestion through Next.js API routes using the Supabase service role, so that Connector auth and writes are controlled server-side.
 30. As a developer, I want stable external Flow IDs and upserts, so that retries do not create duplicate Flows.
-31. As Krzysztof, I want Amon to prepare migrations and browser setup instructions, so that I can configure Supabase/GitHub/Vercel externally myself.
-32. As Krzysztof, I want GitHub Actions quality gates, so that deployment via Vercel Git integration is automatic but guarded by typecheck/test/build.
+31. As a project operator, I want migrations and browser setup instructions prepared, so that Supabase/GitHub/Vercel can be configured externally.
+32. As a project operator, I want GitHub Actions quality gates, so that deployment via Vercel Git integration is automatic but guarded by typecheck/test/build.
 
 ## Implementation Decisions
 
@@ -183,7 +183,7 @@ The web UI polls Integration status during pairing.
 
 ### External setup workflow
 
-Krzysztof will set up Supabase, GitHub, and Vercel externally in the browser. Amon must prepare repo files and explicit instructions.
+Supabase, GitHub, and Vercel are set up externally in the browser. The repo must include required files and explicit instructions.
 
 Required repo artifacts:
 
@@ -193,7 +193,7 @@ Required repo artifacts:
 - GitHub Actions quality gate workflow;
 - Vercel Git integration instructions.
 
-When an issue requires external setup, Amon should update setup instructions and ask Krzysztof to confirm the external step is complete before relying on it.
+When an issue requires external setup, update setup instructions and require confirmation that the external step is complete before relying on it.
 
 ### CI/CD
 
@@ -279,4 +279,4 @@ This SaaS track succeeds when:
 9. Mission Control lists the synced Flow.
 10. Flow Replay displays the shallow Flow as graph/timeline/details.
 11. GitHub Actions can run quality gates.
-12. Setup docs tell Krzysztof exactly what external browser steps to perform.
+12. Setup docs clearly describe the required external browser steps.

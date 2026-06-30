@@ -68,7 +68,7 @@ Rules:
 - If layout recalculation is needed, choose the smallest stable approach before considering a major layout engine change.
 - Make sure fullscreen is the primary target for expansion; embedded graph can support it if stable, but do not let cramped embedded behavior compromise the fullscreen UX.
 
-Amon process reminders:
+the implementation agent process reminders:
 
 - Read project docs/ADRs first.
 - Keep the feature demoable and stable before adding clever graph behavior.

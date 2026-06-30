@@ -21,7 +21,7 @@ describe('Hermes pairing service', () => {
   });
 
   it('builds the default integration name from the workspace name', () => {
-    expect(buildDefaultIntegrationName('Krzysztof Workspace')).toBe('Krzysztof Workspace Hermes');
+    expect(buildDefaultIntegrationName('Alpha Workspace')).toBe('Alpha Workspace Hermes');
   });
 
   it('creates a pending Hermes integration and pairing token', async () => {
@@ -45,7 +45,7 @@ describe('Hermes pairing service', () => {
       },
     });
 
-    const result = await createHermesPairingSession(store, { id: 'user-1', email: 'krzysztof@example.com' });
+    const result = await createHermesPairingSession(store, { id: 'user-1', email: 'alex@example.com' });
 
     expect(result.integration.status).toBe('pending');
     expect(result.command).toContain("curl -fsSL '");

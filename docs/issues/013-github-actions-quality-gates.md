@@ -6,7 +6,7 @@ Add CI checks so the SaaS app can deploy through Vercel Git integration safely.
 
 ## Product context
 
-Krzysztof will configure GitHub/Vercel externally. The repo should provide automated quality gates before deployment.
+GitHub/Vercel are configured externally. The repo should provide automated quality gates before deployment.
 
 ## Scope
 
@@ -48,4 +48,4 @@ npm test
 npm run build
 ```
 
-If this issue requires external browser setup, update `docs/setup.md` and ask Krzysztof to confirm the step is complete before relying on it.
+If this issue requires external browser setup, update `docs/setup.md` and require confirmation the step is complete before relying on it.

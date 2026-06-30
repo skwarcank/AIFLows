@@ -130,4 +130,4 @@ None - can start immediately.
 
 ## External setup rule
 
-If this issue requires external Supabase/Vercel/GitHub setup or seed data, update `docs/setup.md`, tell Krzysztof exactly what to do, and ask him to confirm before relying on that setup.
+If this issue requires external Supabase/Vercel/GitHub setup or seed data, update `docs/setup.md`, document the required external steps, and require confirmation before relying on that setup.

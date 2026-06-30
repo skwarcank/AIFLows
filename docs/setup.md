@@ -1,10 +1,10 @@
 # AIFlows SaaS Setup Guide
 
-This guide is for Krzysztof. Amon should keep it updated while implementing SaaS issues.
+This guide covers local and external setup for AIFlows SaaS.
 
 Important workflow rule:
 
-> If an implementation issue requires an external browser/provider step, Amon must update this file with exact instructions and ask Krzysztof to confirm completion before relying on that step.
+> If an implementation issue requires an external browser/provider step, update this file with exact instructions and require confirmation before relying on that step.
 
 ## 0. Local app to run while developing
 
@@ -136,7 +136,7 @@ It runs:
 
 It does **not** deploy to Vercel and does **not** apply production migrations.
 
-Krzysztof steps:
+External setup steps:
 
 1. Ensure GitHub auth is configured on the machine used to push.
 2. Push `main` to GitHub.
@@ -148,7 +148,7 @@ Deployment strategy:
 
 > Vercel Git integration handles deployment. GitHub Actions runs checks only.
 
-Krzysztof steps:
+External setup steps:
 
 1. Create/import the AIFlows GitHub repo in Vercel.
 2. Select the Next.js app root: `apps/web`.
@@ -255,4 +255,4 @@ After the SaaS vertical slice:
 
 ## 8. Confirmation rule
 
-When a step depends on Supabase, GitHub, or Vercel setup in the browser, Krzysztof must confirm completion before Amon treats that setup as real.
+When a step depends on Supabase, GitHub, or Vercel setup in the browser, require confirmation before treating that setup as available.

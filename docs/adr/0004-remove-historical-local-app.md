@@ -26,5 +26,5 @@ Use git history as the archive for old implementation details.
 
 - Root scripts and workspaces only target active packages.
 - README, development notes, and agent instructions are SaaS-first.
-- Future agents should not improve or resurrect the old local app unless Krzysztof explicitly asks.
+- Future agents should not improve or resurrect the old local app unless explicitly requested.
 - If old behavior needs to be recovered, inspect git history before this cleanup rather than keeping stale code/docs in the active tree.

@@ -67,7 +67,7 @@ Errors deserve special treatment:
 - Do not expose full raw Hermes database rows or full raw tool outputs if those are not already part of the stored shallow payload policy.
 - Pretty JSON means indentation and readable monospace at minimum; syntax highlighting is nice but optional.
 
-Amon process reminders:
+the implementation agent process reminders:
 
 - Read project docs/ADRs first.
 - Keep shallow content policy intact.

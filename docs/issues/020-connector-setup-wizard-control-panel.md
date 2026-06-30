@@ -476,4 +476,4 @@ If using a temporary home directory for tests, verify state writes do not touch 
 
 ## External setup rule
 
-If this issue requires Supabase, GitHub, Vercel, or deployed Hosted AIFlows setup, update `docs/setup.md`, tell Krzysztof exactly what to do, and ask him to confirm before relying on that setup.
+If this issue requires Supabase, GitHub, Vercel, or deployed Hosted AIFlows setup, update `docs/setup.md`, document the required external steps, and require confirmation before relying on that setup.

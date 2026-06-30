@@ -18,7 +18,7 @@ function createStore(overrides: Partial<WorkspaceStore>): WorkspaceStore {
 
 describe('app shell state', () => {
   it('builds a friendly default workspace name from email', () => {
-    expect(buildDefaultWorkspaceName('krzysztof.skwarcan@example.com')).toBe("Krzysztof Skwarcan's Workspace");
+    expect(buildDefaultWorkspaceName('alex.rivera@example.com')).toBe("Alex Rivera's Workspace");
     expect(buildDefaultWorkspaceName(undefined)).toBe('My Workspace');
   });
 
@@ -35,7 +35,7 @@ describe('app shell state', () => {
       },
       createWorkspace: async ({ userId, email }) => {
         calls.push(`createWorkspace:${userId}:${email}`);
-        return { id: 'workspace-1', name: "Krzysztof's Workspace", slug: 'user-1' };
+        return { id: 'workspace-1', name: "Alex's Workspace", slug: 'user-1' };
       },
       findFirstIntegration: async (workspaceId) => {
         calls.push(`findFirstIntegration:${workspaceId}`);
@@ -43,15 +43,15 @@ describe('app shell state', () => {
       },
     });
 
-    const state = await ensureAppShellState(store, { id: 'user-1', email: 'krzysztof@example.com' });
+    const state = await ensureAppShellState(store, { id: 'user-1', email: 'alex@example.com' });
 
     expect(state).toEqual({
-      workspace: { id: 'workspace-1', name: "Krzysztof's Workspace", slug: 'user-1' },
+      workspace: { id: 'workspace-1', name: "Alex's Workspace", slug: 'user-1' },
       integration: null,
     });
     expect(calls).toEqual([
       'findWorkspaceByOwner',
-      'createWorkspace:user-1:krzysztof@example.com',
+      'createWorkspace:user-1:alex@example.com',
       'findFirstIntegration:workspace-1',
     ]);
   });

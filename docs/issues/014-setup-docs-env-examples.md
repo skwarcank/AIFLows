@@ -2,11 +2,11 @@
 
 ## Goal
 
-Ensure Krzysztof has exact external setup instructions for Supabase, GitHub, and Vercel.
+Ensure exact external setup instructions exist for Supabase, GitHub, and Vercel.
 
 ## Product context
 
-Krzysztof will do provider setup in browser. Amon must prepare repo artifacts and clear instructions, and pause for confirmation when external setup is required.
+Provider setup is performed in the browser. The repo must include required artifacts and clear instructions, and implementation must pause for confirmation when external setup is required.
 
 ## Scope
 
@@ -25,7 +25,7 @@ Krzysztof will do provider setup in browser. Amon must prepare repo artifacts an
 
 ## UX/design notes
 
-Instructions should be concrete enough for Krzysztof to follow without guessing. Use checklists.
+Instructions should be concrete enough to follow without guessing. Use checklists.
 
 ## Implementation notes
 
@@ -37,7 +37,7 @@ Each issue that introduces new env vars or external provider requirements should
 - [ ] `.env.example` includes all required env vars with safe placeholders.
 - [ ] Setup guide includes Supabase, GitHub OAuth, Vercel, migrations, and CI/CD instructions.
 - [ ] Setup guide warns about localhost redirect misconfiguration.
-- [ ] Amon pauses/asks for confirmation when an external step is needed.
+- [ ] the implementation agent pauses/asks for confirmation when an external step is needed.
 
 ## Verification
 
@@ -49,4 +49,4 @@ npm test
 npm run build
 ```
 
-If this issue requires external browser setup, update `docs/setup.md` and ask Krzysztof to confirm the step is complete before relying on it.
+If this issue requires external browser setup, update `docs/setup.md` and require confirmation the step is complete before relying on it.

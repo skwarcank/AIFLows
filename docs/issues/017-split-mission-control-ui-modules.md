@@ -52,7 +52,7 @@ components/step-timeline.tsx
 
 Names can differ if the existing project conventions suggest better names.
 
-Amon should use OpenCode for a bounded refactor/review if available, then inspect diffs manually and run verification.
+the implementation agent should use OpenCode for a bounded refactor/review if available, then inspect diffs manually and run verification.
 
 ## Acceptance criteria
 
@@ -82,4 +82,4 @@ Open the app, login/onboard if configured, confirm the no-Integration and connec
 
 ## External setup rule
 
-If local manual verification requires external Supabase/Vercel setup that is not already complete, update `docs/setup.md`, tell Krzysztof exactly what to do, and ask him to confirm before relying on that setup.
+If local manual verification requires external Supabase/Vercel setup that is not already complete, update `docs/setup.md`, document the required external steps, and require confirmation before relying on that setup.

@@ -73,7 +73,7 @@ This keeps AIFlows useful beyond coding/programming conversations.
 - Prefer a small centralized category-to-icon/color mapping so future adapters/tools can reuse it.
 - The graph should remain readable with shallow Step data; do not introduce fake summaries.
 
-Amon process reminders:
+the implementation agent process reminders:
 
 - Read project docs/ADRs first.
 - Preserve the product direction: beautiful Mission Control, not a raw debugging console.

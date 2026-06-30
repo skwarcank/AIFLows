@@ -6,7 +6,7 @@ Make the Flow graph feel like the hero feature by adding an immersive fullscreen
 
 ## Product context
 
-Krzysztof wants the graph to be bigger or open fullscreen because it is the most interesting feature. Fullscreen should not simply enlarge raw data; it should present the Story graph clearly and let reviewers inspect evidence on demand.
+The graph should be available in a larger fullscreen mode because it is a primary product feature. Fullscreen should not simply enlarge raw data; it should present the Story graph clearly and let reviewers inspect evidence on demand.
 
 ## Scope
 
@@ -72,7 +72,7 @@ Clicking a node opens the drawer; the canvas remains readable and presentation-f
 - Ensure keyboard escape/backdrop/close behavior is predictable.
 - Avoid introducing layout jitter that makes demos feel fragile.
 
-Amon process reminders:
+the implementation agent process reminders:
 
 - Read project docs/ADRs first.
 - Use real app verification, not only static inspection.

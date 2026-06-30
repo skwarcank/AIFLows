@@ -102,7 +102,7 @@ class FakeQuery {
 function flowPayload(overrides: Partial<ShallowFlowPayload> = {}): ShallowFlowPayload {
   return {
     externalId: 'flow-1',
-    profile: { externalId: 'profile-1', name: 'Amon', profileType: 'named' },
+    profile: { externalId: 'profile-1', name: 'Default', profileType: 'named' },
     title: 'A completed flow',
     prompt: 'Do the thing',
     finalAnswer: 'Done',

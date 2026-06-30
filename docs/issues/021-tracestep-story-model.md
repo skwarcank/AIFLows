@@ -82,13 +82,13 @@ Do not overfit this model to programming-only conversations. Coding traces are o
 - Group only obvious repeated events in this slice if safe; complex expansion behavior belongs to a later issue.
 - Make errors/status explicit so later graph nodes can surface failures even when groups are collapsed.
 
-Amon process reminders:
+the implementation agent process reminders:
 
 - Read `CONTEXT.md`, `docs/PRD.md`, `docs/architecture.md`, `docs/setup.md`, and relevant ADRs before implementation.
 - Preserve SaaS decisions and the shallow Step content policy.
 - Use OpenCode deliberately for bounded implementation/review if available, but inspect and verify changes yourself.
 - Run real verification before reporting success.
-- Pause for Krzysztof confirmation if external Supabase/GitHub/Vercel setup becomes necessary.
+- Pause for external setup confirmation if external Supabase/GitHub/Vercel setup becomes necessary.
 
 ## Acceptance criteria
 

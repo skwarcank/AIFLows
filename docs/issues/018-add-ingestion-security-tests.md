@@ -70,8 +70,8 @@ npm run test -w packages/flow-core
 
 ## Blocked by
 
-- Issue 017 is recommended first if UI/module refactors are in flight, but this can proceed independently if Amon focuses only on backend/helper tests.
+- Issue 017 is recommended first if UI/module refactors are in flight, but this can proceed independently if the implementation agent focuses only on backend/helper tests.
 
 ## External setup rule
 
-If this issue requires real Supabase project setup for integration tests, update `docs/setup.md`, tell Krzysztof exactly what to do, and ask him to confirm before relying on that setup. Prefer local mocks/fakes unless real external setup is deliberately chosen.
+If this issue requires real Supabase project setup for integration tests, update `docs/setup.md`, document the required external steps, and require confirmation before relying on that setup. Prefer local mocks/fakes unless real external setup is deliberately chosen.

@@ -36,7 +36,7 @@ npm outdated
 
 If a patched Next 14 or Next 15 version resolves the advisories, prefer that over jumping to Next 16. If only Next 16 resolves the audit, make the migration explicit and verify all affected Next APIs.
 
-Amon should use OpenCode for a focused review if available, especially to inspect Next migration impact.
+the implementation agent should use OpenCode for a focused review if available, especially to inspect Next migration impact.
 
 ## Acceptance criteria
 
@@ -62,4 +62,4 @@ None - can start immediately.
 
 ## External setup rule
 
-If this issue requires external Vercel/Supabase/GitHub changes, update `docs/setup.md`, tell Krzysztof exactly what to do, and ask him to confirm before relying on that setup.
+If this issue requires external Vercel/Supabase/GitHub changes, update `docs/setup.md`, document the required external steps, and require confirmation before relying on that setup.
